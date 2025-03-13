@@ -1,0 +1,9 @@
+Emoji Puzzle Game is a multiplayer online game where players guess movie titles, phrases, or concepts based on emoji combinations. The game is designed for parties, family gatherings, and team-building activities, with a focus on providing a seamless experience for both players and hosts.
+Target Audience
+
+Technology Stack
+
+Frontend: React.js
+Backend: Node.js with Express
+Real-time Communication: Socket.IO
+Styling: Tailwind CSS
