@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { getSocket, initializeSocket } from '../services/socketService';
+import {  initializeSocket } from '../services/socketService';
 
 // Create the game context
 const GameContext = createContext();
@@ -60,6 +60,21 @@ export const GameProvider = ({ children }) => {
     
     console.log('GameContext: Setting up game event listeners');
 
+    // Game state update event
+    socket.on('game_state_update', ({ gameState }) => {
+      console.log('GameContext: Game state update event', { 
+        playersAnswered: gameState.playersAnswered,
+        totalPlayers: gameState.totalPlayers
+      });
+      setGameState(gameState);
+    });
+
+    // Guess result event
+    socket.on('guess_result', ({ correct, message, gameState }) => {
+      console.log('GameContext: Guess result event', { correct, message });
+      setGameState(gameState);
+    });
+
     // Player joined event
     socket.on('player_joined', ({ playerId, playerName, gameState }) => {
       console.log('GameContext: Player joined event', { playerId, playerName });
@@ -67,8 +82,8 @@ export const GameProvider = ({ children }) => {
     });
 
     // Player left event
-    socket.on('player_left', ({ playerId, gameState }) => {
-      console.log('GameContext: Player left event', { playerId });
+    socket.on('player_left', ({ playerId, playerName, gameState }) => {
+      console.log('GameContext: Player left event', { playerId, playerName });
       setGameState(gameState);
     });
 
@@ -97,9 +112,10 @@ export const GameProvider = ({ children }) => {
 
     // Game ended event
     socket.on('game_ended', ({ gameResults, gameState }) => {
-      console.log('GameContext: Game ended event');
+      console.log('GameContext: Game ended event', gameResults);
       setGameState(gameState);
       setGameResults(gameResults);
+      setCurrentRound(null);
     });
 
     // Correct guess event
@@ -123,6 +139,8 @@ export const GameProvider = ({ children }) => {
     // Clean up listeners on unmount
     return () => {
       console.log('GameContext: Cleaning up game event listeners');
+      socket.off('game_state_update');
+      socket.off('guess_result');
       socket.off('player_joined');
       socket.off('player_left');
       socket.off('game_started');
@@ -178,6 +196,44 @@ export const GameProvider = ({ children }) => {
     socket.emit('send_message', { gameId, message });
   };
 
+  // End current round (host only)
+  const endRoundHandler = (gameId) => {
+    console.log('GameContext: Host ending round', { gameId });
+    if (!socket) {
+      console.error('GameContext: Cannot end round - socket not initialized');
+      return Promise.reject(new Error('Socket not initialized'));
+    }
+    return new Promise((resolve, reject) => {
+      socket.emit('end_round', { gameId }, (response) => {
+        console.log('GameContext: End round response', response);
+        if (response.success) {
+          resolve(response);
+        } else {
+          reject(new Error(response.message || 'Failed to end round'));
+        }
+      });
+    });
+  };
+  
+  // Start next round (host only)
+  const startNextRoundHandler = (gameId) => {
+    console.log('GameContext: Host starting next round', { gameId });
+    if (!socket) {
+      console.error('GameContext: Cannot start next round - socket not initialized');
+      return Promise.reject(new Error('Socket not initialized'));
+    }
+    return new Promise((resolve, reject) => {
+      socket.emit('start_next_round', { gameId }, (response) => {
+        console.log('GameContext: Start next round response', response);
+        if (response.success) {
+          resolve(response);
+        } else {
+          reject(new Error(response.message || 'Failed to start next round'));
+        }
+      });
+    });
+  };
+
   // Provide the context value
   const value = {
     socket,
@@ -196,7 +252,9 @@ export const GameProvider = ({ children }) => {
     isConnected,
     resetGame,
     joinGame: joinGameHandler,
-    sendMessage: sendMessageHandler
+    sendMessage: sendMessageHandler,
+    endRound: endRoundHandler,
+    startNextRound: startNextRoundHandler
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

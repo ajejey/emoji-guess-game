@@ -1,5 +1,4 @@
-/* Base styles */
-* {
+/* * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -18,7 +17,6 @@ body {
   padding: 1rem;
 }
 
-/* Layout */
 .min-h-screen {
   min-height: 100vh;
 }
@@ -144,7 +142,6 @@ body {
   padding-right: 1rem;
 }
 
-/* Typography */
 h1 {
   font-size: 2rem;
   font-weight: 700;
@@ -203,7 +200,6 @@ h3 {
   font-size: 2.25rem;
 }
 
-/* Colors */
 .text-white {
   color: #ffffff;
 }
@@ -281,7 +277,6 @@ h3 {
   border-color: #d1d5db;
 }
 
-/* Components */
 .card {
   background-color: #ffffff;
   border-radius: 0.75rem;
@@ -348,7 +343,6 @@ h3 {
   font-size: 2.25rem;
 }
 
-/* Responsive */
 @media (min-width: 640px) {
   #root {
     padding: 1.5rem;
@@ -381,7 +375,6 @@ h3 {
   }
 }
 
-/* Utilities */
 .rounded-lg {
   border-radius: 0.5rem;
 }
@@ -448,4 +441,4 @@ h3 {
 
 .hover\:scale-110:hover {
   transform: scale(1.1);
-}
+} */

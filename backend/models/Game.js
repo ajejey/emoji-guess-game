@@ -45,6 +45,7 @@ class Game {
       startTime: null,
       endTime: null,
       correctGuesses: [],
+      allGuesses: [], // Track all guesses, not just correct ones
       status: 'pending', // pending, active, completed
     }));
   }
@@ -128,6 +129,7 @@ class Game {
         answer: round.answer,
         category: round.category,
         correctGuesses: round.correctGuesses,
+        allGuesses: round.allGuesses
       },
       isGameOver: this.currentRound > this.settings.roundsPerGame
     };
@@ -209,6 +211,15 @@ class Game {
         isFirst: isFirstCorrect
       });
       
+      round.allGuesses.push({
+        playerId,
+        playerName: player.name,
+        guess: normalizedGuess,
+        timestamp: Date.now(),
+        isCorrect,
+        score // Add score for correct guesses
+      });
+      
       this.lastActivity = Date.now();
       
       return { 
@@ -218,6 +229,15 @@ class Game {
         isFirstCorrect
       };
     }
+    
+    round.allGuesses.push({
+      playerId,
+      playerName: player.name,
+      guess: normalizedGuess,
+      timestamp: Date.now(),
+      isCorrect: false,
+      score: 0 // Zero score for incorrect guesses
+    });
     
     return { 
       success: true, 
@@ -258,6 +278,17 @@ class Game {
     // Return a sanitized version of the game state without answers
     const currentRound = this.rounds[this.currentRound - 1];
     
+    // Count players who have answered this round (including incorrect guesses)
+    let playersAnswered = 0;
+    if (currentRound && currentRound.status === 'active') {
+      // Get unique player IDs from allGuesses array
+      const playersWhoAnswered = new Set();
+      currentRound.allGuesses.forEach(guess => {
+        playersWhoAnswered.add(guess.playerId);
+      });
+      playersAnswered = playersWhoAnswered.size;
+    }
+    
     return {
       id: this.id,
       hostId: this.hostId,
@@ -266,7 +297,8 @@ class Game {
         name: player.name,
         score: player.score,
         isHost: player.isHost,
-        isActive: player.isActive
+        isActive: player.isActive,
+        hasAnswered: currentRound?.allGuesses.some(g => g.playerId === player.id) || false
       })),
       status: this.status,
       currentRound: this.currentRound,
@@ -276,6 +308,9 @@ class Game {
       roundEndTime: this.roundEndTime,
       currentEmojis: currentRound?.status === 'active' ? currentRound.emojis : null,
       currentCategory: currentRound?.status === 'active' ? currentRound.category : null,
+      playersAnswered: playersAnswered,
+      totalPlayers: Object.keys(this.players).length,
+      allGuesses: currentRound?.status === 'completed' ? currentRound.allGuesses : null
     };
   }
 }

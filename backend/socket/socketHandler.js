@@ -15,6 +15,7 @@ function initializeSocketHandlers(io) {
     // Create a new game room
     socket.on('create_game', ({ playerName, gameSettings }, callback) => {
       try {
+        console.log('Creating game with settings:', gameSettings);
         const game = new Game(socket.id, gameSettings);
         game.addPlayer(socket.id, playerName);
         
@@ -42,13 +43,16 @@ function initializeSocketHandlers(io) {
     // Join an existing game
     socket.on('join_game', ({ gameId, playerName }, callback) => {
       try {
+        console.log(`Player ${playerName} attempting to join game ${gameId}`);
         const game = activeGames[gameId];
         
         if (!game) {
+          console.log(`Game not found: ${gameId}`);
           return callback({ success: false, message: 'Game not found' });
         }
         
         if (game.status === 'playing' && !game.players[socket.id]) {
+          console.log(`Cannot join game in progress: ${gameId}`);
           return callback({ success: false, message: 'Cannot join a game in progress' });
         }
         
@@ -83,19 +87,23 @@ function initializeSocketHandlers(io) {
     // Start the game
     socket.on('start_game', ({ gameId }, callback) => {
       try {
+        console.log(`Starting game: ${gameId}`);
         const game = activeGames[gameId];
         
         if (!game) {
+          console.log(`Game not found: ${gameId}`);
           return callback({ success: false, message: 'Game not found' });
         }
         
         if (socket.id !== game.hostId) {
+          console.log(`Non-host tried to start game: ${gameId}`);
           return callback({ success: false, message: 'Only the host can start the game' });
         }
         
         const result = game.startGame();
         
         if (!result.success) {
+          console.log(`Failed to start game: ${gameId}, reason: ${result.message}`);
           return callback(result);
         }
         
@@ -107,65 +115,6 @@ function initializeSocketHandlers(io) {
         
         callback({ success: true });
         
-        // Set timer for round end
-        setTimeout(() => {
-          if (activeGames[gameId] && activeGames[gameId].status === 'playing') {
-            const roundEndResult = game.endRound();
-            
-            // Notify all players that the round has ended
-            io.to(gameId).emit('round_ended', {
-              roundResults: roundEndResult.roundResults,
-              gameState: game.getPublicGameState()
-            });
-            
-            // If game is over, notify players
-            if (roundEndResult.isGameOver) {
-              const gameEndResult = game.endGame();
-              io.to(gameId).emit('game_ended', {
-                gameResults: gameEndResult.gameResults,
-                gameState: game.getPublicGameState()
-              });
-              
-              // Keep the game active for a while so players can see results
-              setTimeout(() => {
-                if (activeGames[gameId]) {
-                  delete activeGames[gameId];
-                }
-              }, 3600000); // 1 hour
-            } else {
-              // Start next round after a delay
-              setTimeout(() => {
-                if (activeGames[gameId] && activeGames[gameId].status === 'playing') {
-                  const nextRoundResult = game.startRound();
-                  
-                  // Notify all players about the new round
-                  io.to(gameId).emit('round_started', {
-                    round: nextRoundResult.round,
-                    gameState: game.getPublicGameState()
-                  });
-                  
-                  // Set timer for next round end
-                  setTimeout(() => {
-                    if (activeGames[gameId] && activeGames[gameId].status === 'playing') {
-                      const roundEndResult = game.endRound();
-                      
-                      // Notify all players that the round has ended
-                      io.to(gameId).emit('round_ended', {
-                        roundResults: roundEndResult.roundResults,
-                        gameState: game.getPublicGameState()
-                      });
-                      
-                      // Continue with game flow...
-                      // This is simplified - in a real implementation you'd use a more robust
-                      // approach to handle round timing rather than nested setTimeout calls
-                    }
-                  }, game.settings.roundTime * 1000);
-                }
-              }, 5000); // 5 second delay between rounds
-            }
-          }
-        }, game.settings.roundTime * 1000);
-        
         console.log(`Game started: ${gameId}`);
       } catch (error) {
         console.error('Error starting game:', error);
@@ -176,9 +125,11 @@ function initializeSocketHandlers(io) {
     // Submit a guess
     socket.on('submit_guess', ({ gameId, guess }, callback) => {
       try {
+        console.log(`Player ${socket.id} submitted guess in game ${gameId}: ${guess}`);
         const game = activeGames[gameId];
         
         if (!game) {
+          console.log(`Game not found: ${gameId}`);
           return callback({ success: false, message: 'Game not found' });
         }
         
@@ -191,6 +142,7 @@ function initializeSocketHandlers(io) {
         if (result.success && result.isCorrect) {
           const player = game.players[socket.id];
           
+          // Send updated game state to all players to reflect the new answer count
           io.to(gameId).emit('correct_guess', {
             playerId: socket.id,
             playerName: player.name,
@@ -199,11 +151,122 @@ function initializeSocketHandlers(io) {
             gameState: game.getPublicGameState()
           });
           
-          console.log(`Player ${player.name} guessed correctly in game ${gameId}`);
+          console.log(`Player ${socket.id} guessed correctly: ${guess}. Score: ${result.score}`);
+          console.log(`Updated player count: ${game.getPublicGameState().playersAnswered}/${game.getPublicGameState().totalPlayers}`);
+        } else if (result.success) {
+          // Even for incorrect guesses, update the UI for the player
+          socket.emit('guess_result', {
+            correct: false,
+            message: "Incorrect guess, try again!",
+            gameState: game.getPublicGameState()
+          });
+          console.log(`Player ${socket.id} guessed incorrectly: ${guess}`);
         }
+        
+        // Always update the game state for all players
+        io.to(gameId).emit('game_state_update', {
+          gameState: game.getPublicGameState()
+        });
+        
+        console.log(`Updated game state for all players in game ${gameId}`);
       } catch (error) {
         console.error('Error submitting guess:', error);
         callback({ success: false, message: 'Failed to submit guess' });
+      }
+    });
+    
+    // End current round (host only)
+    socket.on('end_round', ({ gameId }, callback) => {
+      try {
+        console.log(`Ending round in game ${gameId}`);
+        const game = activeGames[gameId];
+        
+        if (!game) {
+          console.log(`Game not found: ${gameId}`);
+          return callback({ success: false, message: 'Game not found' });
+        }
+        
+        if (socket.id !== game.hostId) {
+          console.log(`Non-host tried to end round: ${gameId}`);
+          return callback({ success: false, message: 'Only the host can end the round' });
+        }
+        
+        if (game.status !== 'playing') {
+          console.log(`Cannot end round: game ${gameId} is not in playing state`);
+          return callback({ success: false, message: 'Game is not in progress' });
+        }
+        
+        const roundEndResult = game.endRound();
+        
+        // Notify all players that the round has ended
+        io.to(gameId).emit('round_ended', {
+          roundResults: roundEndResult.roundResults,
+          gameState: game.getPublicGameState()
+        });
+        
+        callback({ 
+          success: true, 
+          isGameOver: roundEndResult.isGameOver 
+        });
+        
+        // If game is over, notify players
+        if (roundEndResult.isGameOver) {
+          const gameEndResult = game.endGame();
+          io.to(gameId).emit('game_ended', {
+            gameResults: gameEndResult.gameResults,
+            gameState: game.getPublicGameState()
+          });
+          
+          // Keep the game active for a while so players can see results
+          setTimeout(() => {
+            if (activeGames[gameId]) {
+              delete activeGames[gameId];
+            }
+          }, 3600000); // 1 hour
+        }
+        
+        console.log(`Round ended in game ${gameId}`);
+      } catch (error) {
+        console.error('Error ending round:', error);
+        callback({ success: false, message: 'Failed to end round' });
+      }
+    });
+    
+    // Start next round (host only)
+    socket.on('start_next_round', ({ gameId }, callback) => {
+      try {
+        console.log(`Starting next round in game ${gameId}`);
+        const game = activeGames[gameId];
+        
+        if (!game) {
+          console.log(`Game not found: ${gameId}`);
+          return callback({ success: false, message: 'Game not found' });
+        }
+        
+        if (socket.id !== game.hostId) {
+          console.log(`Non-host tried to start next round: ${gameId}`);
+          return callback({ success: false, message: 'Only the host can start the next round' });
+        }
+        
+        if (game.status !== 'playing') {
+          console.log(`Cannot start next round: game ${gameId} is not in playing state`);
+          return callback({ success: false, message: 'Game is not in progress' });
+        }
+        
+        const nextRoundResult = game.startRound();
+        
+        // Notify all players about the new round
+        io.to(gameId).emit('round_started', {
+          round: nextRoundResult.round,
+          gameState: game.getPublicGameState()
+        });
+        
+        callback({ success: true });
+        
+        console.log(`Next round started in game ${gameId}`);
+      } catch (error) {
+        console.error('Error starting next round:', error);
+        callback({ success: false, message: 'Failed to start next round' });
       }
     });
     
@@ -216,47 +279,44 @@ function initializeSocketHandlers(io) {
           return;
         }
         
-        const player = game.players[socket.id];
+        const result = game.addMessage(socket.id, message);
         
-        if (!player) {
-          return;
+        if (result) {
+          const messages = game.messages;
+          const latestMessage = messages[messages.length - 1];
+          
+          io.to(gameId).emit('new_message', latestMessage);
         }
-        
-        // Add message to game
-        game.addMessage(socket.id, message);
-        
-        // Broadcast message to all players in the room
-        io.to(gameId).emit('new_message', {
-          playerId: socket.id,
-          playerName: player.name,
-          message,
-          timestamp: Date.now()
-        });
       } catch (error) {
         console.error('Error sending message:', error);
       }
     });
     
-    // Disconnect handler
+    // Handle disconnection
     socket.on('disconnect', () => {
       console.log('User disconnected:', socket.id);
       
-      // Find games where this player is participating
+      // Find any games the player is part of
       Object.values(activeGames).forEach(game => {
         if (game.players[socket.id]) {
-          // Remove player from game
-          game.removePlayer(socket.id);
+          const playerName = game.players[socket.id].name;
+          const wasRemoved = game.removePlayer(socket.id);
           
-          // Notify other players
-          socket.to(game.id).emit('player_left', {
-            playerId: socket.id,
-            gameState: game.getPublicGameState()
-          });
-          
-          // If no players left, remove the game
-          if (Object.keys(game.players).length === 0) {
-            delete activeGames[game.id];
-            console.log(`Game removed: ${game.id} (no players left)`);
+          if (wasRemoved) {
+            // Notify remaining players
+            io.to(game.id).emit('player_left', {
+              playerId: socket.id,
+              playerName,
+              gameState: game.getPublicGameState()
+            });
+            
+            console.log(`Player ${playerName} removed from game ${game.id}`);
+            
+            // If no players left, clean up the game
+            if (Object.keys(game.players).length === 0) {
+              delete activeGames[game.id];
+              console.log(`Game ${game.id} removed due to no players`);
+            }
           }
         }
       });

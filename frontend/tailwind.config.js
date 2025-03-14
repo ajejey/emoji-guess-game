@@ -1,8 +1,8 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}", // Adjust this path based on your project structure
+   './public/index.html'
   ],
   theme: {
     extend: {
@@ -16,8 +16,7 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
-      },
-    },
+      },},
   },
   plugins: [],
 }

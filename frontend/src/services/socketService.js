@@ -117,6 +117,54 @@ export const sendMessage = (gameId, message) => {
   socket.emit('send_message', { gameId, message });
 };
 
+// End current round (host only)
+export const endRound = (gameId) => {
+  console.log('socketService: Host ending round', { gameId });
+  return new Promise((resolve, reject) => {
+    const socket = getSocket();
+    socket.emit('end_round', { gameId }, (response) => {
+      console.log('socketService: End round response', response);
+      if (response && response.success) {
+        resolve(response);
+      } else {
+        const errorMsg = response?.message || 'Failed to end round';
+        console.error('socketService: End round error', errorMsg);
+        reject(new Error(errorMsg));
+      }
+    });
+    
+    // Add a timeout in case the server doesn't respond
+    setTimeout(() => {
+      console.warn('socketService: End round timeout after 5 seconds');
+      reject(new Error('Server did not respond in time'));
+    }, 5000);
+  });
+};
+
+// Start next round (host only)
+export const startNextRound = (gameId) => {
+  console.log('socketService: Host starting next round', { gameId });
+  return new Promise((resolve, reject) => {
+    const socket = getSocket();
+    socket.emit('start_next_round', { gameId }, (response) => {
+      console.log('socketService: Start next round response', response);
+      if (response && response.success) {
+        resolve(response);
+      } else {
+        const errorMsg = response?.message || 'Failed to start next round';
+        console.error('socketService: Start next round error', errorMsg);
+        reject(new Error(errorMsg));
+      }
+    });
+    
+    // Add a timeout in case the server doesn't respond
+    setTimeout(() => {
+      console.warn('socketService: Start next round timeout after 5 seconds');
+      reject(new Error('Server did not respond in time'));
+    }, 5000);
+  });
+};
+
 // Disconnect from the server
 export const disconnect = () => {
   if (socket) {

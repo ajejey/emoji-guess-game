@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGame } from '../contexts/GameContext';
 import { submitGuess } from '../services/socketService';
@@ -20,17 +20,28 @@ const GamePage = () => {
     setError,
     socket,
     joinGame,
-    sendMessage
+    sendMessage,
+    endRound,
+    startNextRound
   } = useGame();
   
-  console.log('GamePage: Component initialized', { gameId });
+  console.log('GamePage: Component rendered', { 
+    gameId, 
+    playerName: player?.name,
+    gameStatus: gameState?.status,
+    currentRound: gameState?.currentRound,
+    playersAnswered: gameState?.playersAnswered,
+    totalPlayers: gameState?.totalPlayers 
+  });
   
   const [guess, setGuess] = useState('');
   const [message, setMessage] = useState('');
   const [timeLeft, setTimeLeft] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [correctGuess, setCorrectGuess] = useState(false);
+  const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const [previousRound, setPreviousRound] = useState(null);
   
   // Redirect to home if no game state
   useEffect(() => {
@@ -46,7 +57,7 @@ const GamePage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
   
-  // Timer effect
+  // Timer effect (just for display, not for game logic)
   useEffect(() => {
     if (!gameState || gameState.status !== 'playing' || !gameState.roundEndTime) {
       console.log('GamePage: Timer not started', { 
@@ -76,7 +87,7 @@ const GamePage = () => {
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [gameState]);
+  }, [gameState?.roundEndTime]);
   
   // Show results when round ends
   useEffect(() => {
@@ -84,47 +95,60 @@ const GamePage = () => {
     if (roundResults) {
       console.log('GamePage: Setting showResults to true');
       setShowResults(true);
+    } else {
+      setShowResults(false);
     }
   }, [roundResults]);
   
-  // Add socket event listener for game state updates
+  // Join the game when component mounts or when socket changes
   useEffect(() => {
-    if (!socket || !gameId) return;
+    if (!socket || !gameId || !player?.name) return;
     
-    console.log('GamePage: Setting up socket listeners for gameId:', gameId);
+    console.log('GamePage: Joining game', { gameId, playerName: player.name });
     
-    // Join the game when component mounts
-    joinGame(gameId, player?.name);
-    console.log('GamePage: Joining game with player name:', player?.name);
-    
-    socket.on('gameState', (updatedGameState) => {
-      console.log('GamePage: Received gameState update:', updatedGameState);
-    });
-    
-    socket.on('connect', () => {
-      console.log('GamePage: Socket connected, socket id:', socket.id);
-    });
-    
-    socket.on('connect_error', (error) => {
-      console.error('GamePage: Socket connection error:', error);
-    });
-    
-    return () => {
-      console.log('GamePage: Cleaning up game state socket listeners');
-      socket.off('gameState');
-      socket.off('connect');
-      socket.off('connect_error');
-    };
-  }, [socket, gameId, player, joinGame]);
+    // Only join if not already in game
+    if (!gameState) {
+      joinGame(gameId, player.name).catch(error => {
+        console.error('GamePage: Error joining game:', error);
+        setError(error.message);
+      });
+    }
+  }, [socket, gameId, player?.name, joinGame, gameState, setError]);
   
+  // Reset correctGuess state when a new round starts
+  useEffect(() => {
+    if (gameState?.currentRound !== previousRound) {
+      console.log('GamePage: Round changed, resetting correctGuess state', { 
+        previous: previousRound, 
+        current: gameState?.currentRound 
+      });
+      setCorrectGuess(false);
+      setPreviousRound(gameState?.currentRound);
+    }
+  }, [gameState?.currentRound, previousRound]);
+  
+  // Check if player has already guessed correctly in this round
+  useEffect(() => {
+    if (gameState?.players && player?.id) {
+      const playerObj = gameState.players.find(p => p.id === player.id);
+      if (playerObj?.hasAnswered) {
+        console.log('GamePage: Player has already answered correctly this round');
+        setCorrectGuess(true);
+      }
+    }
+  }, [gameState?.players, player?.id]);
+
   // Handle submitting a guess
-  const handleSubmitGuess = async (e) => {
+  const handleSubmitGuess = useCallback(async (e) => {
     e.preventDefault();
     
     if (!guess.trim() || correctGuess) return;
     
     try {
+      setLoading(true);
+      console.log('GamePage: Submitting guess', { gameId, guess });
       const response = await submitGuess(gameId, guess);
+      console.log('GamePage: Guess submission response', response);
       
       if (response.isCorrect) {
         setCorrectGuess(true);
@@ -132,20 +156,52 @@ const GamePage = () => {
       
       setGuess('');
     } catch (error) {
+      console.error('GamePage: Error submitting guess:', error);
       setError(error.message);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [gameId, guess, correctGuess, setError]);
   
   // Handle sending a chat message
-  const handleSendMessage = (e) => {
+  const handleSendMessage = useCallback((e) => {
     e.preventDefault();
     
     if (!message.trim()) return;
     
+    console.log('GamePage: Sending message', { gameId, message });
     sendMessage(gameId, message);
     setMessage('');
-  };
+  }, [gameId, message, sendMessage]);
   
+  // Host controls for ending round
+  const handleEndRound = useCallback(async () => {
+    try {
+      setLoading(true);
+      console.log('GamePage: Host ending round', { gameId });
+      await endRound(gameId);
+    } catch (error) {
+      console.error('GamePage: Error ending round:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [gameId, endRound, setError]);
+  
+  // Host controls for starting next round
+  const handleStartNextRound = useCallback(async () => {
+    try {
+      setLoading(true);
+      console.log('GamePage: Host starting next round', { gameId });
+      await startNextRound(gameId);
+    } catch (error) {
+      console.error('GamePage: Error starting next round:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [gameId, startNextRound, setError]);
+
   // If no game state, show loading
   if (!gameState) {
     console.log('GamePage: No gameState yet, showing loading screen', { gameId, player });
@@ -163,12 +219,29 @@ const GamePage = () => {
     console.log('GamePage: Loaded gameState:', { 
       status: gameState.status,
       players: gameState.players?.length,
-      currentRound: gameState.currentRound
+      currentRound: gameState.currentRound,
+      playersAnswered: gameState.playersAnswered,
+      totalPlayers: gameState.totalPlayers
     });
   }
   
-  // If game is finished, show final results
-  if (gameState.status === 'finished' || gameResults) {
+  // Results for finished game
+  if (gameState?.status === 'finished' || gameResults) {
+    console.log('GamePage: Showing game results', { 
+      gameStatus: gameState?.status,
+      hasGameResults: !!gameResults,
+      gameResults
+    });
+    
+    // Add fallback for missing gameResults
+    const finalResults = gameResults?.gameResults || {
+      playerRankings: gameState?.players?.sort((a, b) => b.score - a.score).map((player, index) => ({
+        ...player,
+        rank: index + 1,
+        correctGuesses: player.correctGuesses || 0
+      })) || []
+    };
+
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto">
@@ -188,7 +261,7 @@ const GamePage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {gameResults?.gameResults.playerRankings.map((player, index) => (
+                    {finalResults.playerRankings.map((player, index) => (
                       <tr 
                         key={player.id} 
                         className={`border-b border-gray-100 ${index === 0 ? 'bg-yellow-50' : ''}`}
@@ -237,30 +310,46 @@ const GamePage = () => {
             </div>
             
             <div className="bg-gray-50 rounded-xl p-6 mb-8">
-              <h3 className="text-lg font-medium mb-3">Correct Guesses</h3>
-              {roundResults.correctGuesses.length > 0 ? (
+              <h3 className="text-lg font-medium mb-3">All Guesses</h3>
+              {roundResults.allGuesses && roundResults.allGuesses.length > 0 ? (
                 <div className="space-y-2">
-                  {roundResults.correctGuesses.map((guess, index) => (
+                  {roundResults.allGuesses
+                    .sort((a, b) => (b.isCorrect ? 1 : 0) - (a.isCorrect ? 1 : 0))
+                    .map((guess, index) => (
                     <div 
                       key={index} 
-                      className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-100"
+                      className={`flex justify-between items-center p-3 rounded-lg border ${
+                        guess.isCorrect ? 'bg-green-50 border-green-100' : 'bg-white border-gray-100'
+                      }`}
                     >
                       <div className="flex items-center">
                         <span className="font-medium">{guess.playerName}</span>
-                        {guess.isFirst && (
+                        <span className="ml-2 text-gray-600">
+                          "{guess.guess}"
+                        </span>
+                        {guess.isCorrect && guess.isFirst && (
                           <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
                             First!
                           </span>
                         )}
                       </div>
-                      <div className="text-right">
-                        <span className="font-medium text-primary">+{guess.score}</span>
+                      <div className="flex items-center">
+                        {guess.isCorrect ? (
+                          <div className="flex items-center">
+                            <span className="text-green-600 mr-2">✓</span>
+                            <span className="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-lg font-medium">
+                              +{guess.score || 0} pts
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-red-500 font-medium">✗</span>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500">No one guessed correctly this round!</p>
+                <p className="text-gray-500">No guesses made this round!</p>
               )}
             </div>
             
@@ -288,13 +377,32 @@ const GamePage = () => {
               </div>
             </div>
             
-            <div className="text-center text-gray-600">
-              {gameState.currentRound <= gameState.totalRounds ? (
-                <p>Next round starting soon...</p>
-              ) : (
-                <p>Calculating final results...</p>
-              )}
-            </div>
+            {player?.isHost && gameState.currentRound <= gameState.totalRounds && (
+              <div className="flex justify-center mb-6">
+                <button 
+                  onClick={handleStartNextRound}
+                  disabled={loading}
+                  className="btn-primary"
+                >
+                  {loading ? (
+                    <span className="flex items-center">
+                      <span className="animate-spin h-4 w-4 border-2 border-gray-700 border-t-transparent rounded-full mr-2"></span>
+                      Starting next round...
+                    </span>
+                  ) : 'Start Next Round'}
+                </button>
+              </div>
+            )}
+            
+            {!player?.isHost && (
+              <div className="text-center text-gray-600">
+                {gameState.currentRound <= gameState.totalRounds ? (
+                  <p>Waiting for host to start the next round...</p>
+                ) : (
+                  <p>Calculating final results...</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -324,6 +432,39 @@ const GamePage = () => {
                 </div>
               </div>
               
+              {/* Players who answered indicator */}
+              <div className="mb-4 bg-gray-50 rounded-lg p-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Players answered:</span>
+                  <span className="font-medium">{gameState.playersAnswered} / {gameState.totalPlayers}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                  <div 
+                    className="bg-green-500 h-2.5 rounded-full" 
+                    style={{ width: `${(gameState.playersAnswered / gameState.totalPlayers) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              {/* Host controls */}
+              {player?.isHost && (
+                <div className="mb-4">
+                  <button
+                    onClick={handleEndRound}
+                    disabled={loading}
+                    className="w-full bg-primary text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center">
+                        <span className="animate-spin h-4 w-4 border-2 border-gray-700 border-t-transparent rounded-full mr-2"></span>
+                        Ending round...
+                      </span>
+                    ) : 'End Round'}
+                  </button>
+                  <p className="text-xs text-gray-500 mt-1 text-center">Click to end the current round manually</p>
+                </div>
+              )}
+              
               {/* Emoji display */}
               <EmojiDisplay emojis={currentRound?.emojis} size="large" />
               
@@ -334,21 +475,26 @@ const GamePage = () => {
                     type="text"
                     value={guess}
                     onChange={(e) => setGuess(e.target.value)}
-                    disabled={correctGuess}
-                    placeholder={correctGuess ? "You guessed correctly!" : "Type your guess here..."}
+                    disabled={correctGuess || loading}
+                    placeholder={correctGuess ? "Your answer was submitted" : "Type your guess here..."}
                     className={`input-field pr-24 ${correctGuess ? 'bg-green-50 border-green-300' : ''}`}
                   />
                   <button
                     type="submit"
-                    disabled={!guess.trim() || correctGuess}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary text-white px-4 py-1 rounded-lg text-sm font-medium disabled:opacity-50"
+                    disabled={!guess.trim() || correctGuess || loading}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary text-gray-700 px-4 py-1 rounded-lg text-sm font-medium disabled:opacity-50"
                   >
-                    Guess
+                    {loading ? (
+                      <span className="flex items-center">
+                        <span className="animate-spin h-3 w-3 border-2 border-gray-700 border-t-transparent rounded-full mr-1"></span>
+                        ...
+                      </span>
+                    ) : 'Guess'}
                   </button>
                 </div>
                 {correctGuess && (
-                  <p className="mt-2 text-green-600 text-sm">
-                    Great job! Wait for others to guess or for the round to end.
+                  <p className="mt-2 text-sm text-gray-600">
+                    Answer submitted. Waiting for other players...
                   </p>
                 )}
               </form>

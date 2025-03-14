@@ -40,7 +40,7 @@ module.exports = {
     },
     { 
       emojis: "🕷️ 👨", 
-      answer: "Spider-Man",
+      answer: "Spider Man",
       category: "Movies"
     },
     { 
