@@ -1,16 +1,17 @@
 {
-  "name": "backend",
+  "name": "emoji-game-backend",
   "version": "1.0.0",
   "main": "app.js",
+  "private": true,
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["game", "emoji", "multiplayer", "socket.io"],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Backend server for the Emoji Puzzle Game - a multiplayer online game where players guess movie titles and phrases from emoji combinations",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -22,6 +23,7 @@
     "nodemon": "^3.1.9"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 }
