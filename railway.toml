@@ -1,6 +1,6 @@
 [build]
-builder = "nixpacks"
-buildCommand = "cd backend && npm install"
+builder = "NIXPACKS"
+buildCommand = "cd backend && npm ci"
 
 [deploy]
 startCommand = "cd backend && npm start"
@@ -8,5 +8,5 @@ healthcheckPath = "/api/health"
 healthcheckTimeout = 100
 restartPolicyType = "on_failure"
 
-[phases.setup]
-nixPkgs = ["nodejs", "npm"]
+[nixpacks]
+nodejs = "18"
