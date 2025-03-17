@@ -1,0 +1,92 @@
+{
+  "6VEK9V": {
+    "id": "6VEK9V",
+    "hostId": "v701ElrhqNdSOgUdAAAD",
+    "players": {
+      "v701ElrhqNdSOgUdAAAD": {
+        "id": "v701ElrhqNdSOgUdAAAD",
+        "name": "hostt",
+        "score": 0,
+        "isHost": true,
+        "joinedAt": 1742231491710,
+        "correctGuesses": [],
+        "isActive": true
+      }
+    },
+    "status": "waiting",
+    "currentRound": 0,
+    "rounds": [
+      {
+        "roundNumber": 1,
+        "emojis": "🦇 👨",
+        "answer": "batman",
+        "category": "Movies",
+        "startTime": null,
+        "endTime": null,
+        "correctGuesses": [],
+        "allGuesses": [],
+        "status": "pending"
+      },
+      {
+        "roundNumber": 2,
+        "emojis": "🧙‍♂️ 💍",
+        "answer": "lord of the rings",
+        "category": "Movies",
+        "startTime": null,
+        "endTime": null,
+        "correctGuesses": [],
+        "allGuesses": [],
+        "status": "pending"
+      },
+      {
+        "roundNumber": 3,
+        "emojis": "🧠 🍽️",
+        "answer": "food for thought",
+        "category": "Phrases",
+        "startTime": null,
+        "endTime": null,
+        "correctGuesses": [],
+        "allGuesses": [],
+        "status": "pending"
+      },
+      {
+        "roundNumber": 4,
+        "emojis": "🤖 👮",
+        "answer": "robocop",
+        "category": "Movies",
+        "startTime": null,
+        "endTime": null,
+        "correctGuesses": [],
+        "allGuesses": [],
+        "status": "pending"
+      },
+      {
+        "roundNumber": 5,
+        "emojis": "👻 👨‍👩‍👧",
+        "answer": "ghostbusters",
+        "category": "Movies",
+        "startTime": null,
+        "endTime": null,
+        "correctGuesses": [],
+        "allGuesses": [],
+        "status": "pending"
+      }
+    ],
+    "settings": {
+      "roundTime": 60,
+      "roundsPerGame": 5,
+      "categories": [
+        "Movies",
+        "Phrases",
+        "Nature"
+      ],
+      "customPuzzles": []
+    },
+    "messages": [],
+    "roundStartTime": null,
+    "roundEndTime": null,
+    "createdAt": 1742231491710,
+    "lastActivity": 1742231491710,
+    "timestamp": 1742231491711
+  }
+}

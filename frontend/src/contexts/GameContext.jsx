@@ -1,10 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import {  initializeSocket } from '../services/socketService';
+import { initializeSocket } from '../services/socketService';
 
-// Create the game context
 const GameContext = createContext();
-
-// Custom hook to use the game context
 export const useGame = () => useContext(GameContext);
 
 // Game provider component
@@ -19,34 +16,153 @@ export const GameProvider = ({ children }) => {
   const [gameResults, setGameResults] = useState(null);
   const [error, setError] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const [isHost, setIsHost] = useState(false);
 
-  // Initialize socket connection
+  // Save game session and state to localStorage
+  const saveGameSession = () => {
+    if (gameId && player) {
+      // Save basic session info
+      const gameSession = {
+        gameId,
+        playerId: player.id,
+        playerName: player.name,
+        isHost: player.id === gameState?.hostId,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('emojiGameSession', JSON.stringify(gameSession));
+
+      // If host, save the full game state
+      if (gameState && player.id === gameState.hostId) {
+        saveGameState(gameState);
+      }
+    }
+  };
+
+  // Save full game state
+  const saveGameState = (state) => {
+    if (state && state.id) {
+      console.log('GameContext: Saving game state to localStorage');
+      localStorage.setItem(`emojiGame_${state.id}`, JSON.stringify({
+        gameState: state,
+        timestamp: Date.now()
+      }));
+    }
+  };
+
+  // Effect to save game state whenever it changes
   useEffect(() => {
-    console.log('GameContext: Initializing socket connection');
-    const socketInstance = initializeSocket();
-    setSocket(socketInstance);
+    if (gameState && player?.id === gameState.hostId) {
+      saveGameState(gameState);
+    }
+  }, [gameState, player]);
 
-    // Set up connection status listener
-    socketInstance.on('connect', () => {
-      console.log('GameContext: Socket connected with ID:', socketInstance.id);
-      setIsConnected(true);
-      setError(null);
-    });
+  // Initialize socket connection and handle reconnection
+  useEffect(() => {
+    let reconnectionTimer = null;
+    
+    const initializeConnection = () => {
+      console.log('GameContext: Initializing socket connection');
+      const socketInstance = initializeSocket();
+      setSocket(socketInstance);
 
-    socketInstance.on('disconnect', () => {
-      console.log('GameContext: Socket disconnected');
-      setIsConnected(false);
-    });
+      socketInstance.on('connect', async () => {
+        console.log('GameContext: Socket connected with ID:', socketInstance.id);
+        setIsConnected(true);
+        setError(null);
 
-    socketInstance.on('connect_error', (err) => {
-      console.error('GameContext: Socket connection error:', err);
-      setIsConnected(false);
-      setError('Failed to connect to the server. Please try again.');
-    });
+        // Clear any pending reconnection timer
+        if (reconnectionTimer) {
+          clearTimeout(reconnectionTimer);
+          reconnectionTimer = null;
+        }
 
-    // Clean up on unmount
+        // Attempt reconnection if there's a saved session
+        const savedSession = localStorage.getItem('emojiGameSession');
+        if (savedSession) {
+          try {
+            const session = JSON.parse(savedSession);
+            // Check if session is not too old (30 minutes)
+            if (Date.now() - session.timestamp < 30 * 60 * 1000) {
+              setIsReconnecting(true);
+              console.log('GameContext: Attempting to rejoin game:', session.gameId);
+              
+              // If this client was the host, get the saved game state
+              let savedGameState = null;
+              if (session.isHost) {
+                const savedData = localStorage.getItem(`emojiGame_${session.gameId}`);
+                if (savedData) {
+                  const data = JSON.parse(savedData);
+                  if (Date.now() - data.timestamp < 30 * 60 * 1000) {
+                    savedGameState = data.gameState;
+                  }
+                }
+              }
+
+              socketInstance.emit('rejoin_game', {
+                gameId: session.gameId,
+                playerName: session.playerName,
+                previousPlayerId: session.playerId,
+                savedGameState
+              }, (response) => {
+                if (response.success) {
+                  console.log('GameContext: Successfully rejoined game');
+                  setGameId(session.gameId);
+                  setPlayer({ id: response.playerId, name: session.playerName });
+                  setGameState(response.gameState);
+                  setIsHost(response.gameState.hostId === response.playerId);
+                  saveGameSession();
+                } else {
+                  console.log('GameContext: Failed to rejoin game:', response.message);
+                  localStorage.removeItem('emojiGameSession');
+                  localStorage.removeItem(`emojiGame_${session.gameId}`);
+                  setError('Failed to rejoin the game. Please try again.');
+                }
+                setIsReconnecting(false);
+              });
+            } else {
+              console.log('GameContext: Session expired');
+              localStorage.removeItem('emojiGameSession');
+              localStorage.removeItem(`emojiGame_${session.gameId}`);
+            }
+          } catch (error) {
+            console.error('GameContext: Error processing saved session:', error);
+            localStorage.removeItem('emojiGameSession');
+            setIsReconnecting(false);
+          }
+        }
+      });
+
+      socketInstance.on('disconnect', () => {
+        console.log('GameContext: Socket disconnected');
+        setIsConnected(false);
+        setError('Connection lost. Attempting to reconnect...');
+        
+        // Set a timer to attempt reconnection
+        if (!reconnectionTimer) {
+          reconnectionTimer = setTimeout(() => {
+            console.log('GameContext: Attempting to reconnect...');
+            socketInstance.connect();
+          }, 2000);
+        }
+      });
+
+      socketInstance.on('connect_error', (err) => {
+        console.error('GameContext: Socket connection error:', err);
+        setIsConnected(false);
+        setError('Failed to connect to the server. Please try again.');
+      });
+
+      return socketInstance;
+    };
+
+    const socketInstance = initializeConnection();
+
     return () => {
       console.log('GameContext: Cleaning up socket connection');
+      if (reconnectionTimer) {
+        clearTimeout(reconnectionTimer);
+      }
       socketInstance.disconnect();
     };
   }, []);
@@ -179,6 +295,7 @@ export const GameProvider = ({ children }) => {
           setGameId(gameId);
           setPlayer({ id: response.playerId, name: playerName, isHost: response.isHost });
           setGameState(response.gameState);
+          setIsHost(response.gameState.hostId === response.playerId);
           resolve(response);
         } else {
           reject(new Error(response.message || 'Failed to join game'));
@@ -250,6 +367,7 @@ export const GameProvider = ({ children }) => {
     error,
     setError,
     isConnected,
+    isHost,
     resetGame,
     joinGame: joinGameHandler,
     sendMessage: sendMessageHandler,

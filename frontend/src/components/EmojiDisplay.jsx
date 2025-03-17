@@ -21,7 +21,7 @@ const EmojiDisplay = ({ emojis, size = 'large' }) => {
   }
   
   return (
-    <div className={`flex justify-center items-center space-x-3 my-6 ${sizeClasses[size]}`}>
+    <div className={`flex justify-center items-center space-x-3 my-10 py-8 min-h-[180px] md:min-h-[220px] lg:min-h-[280px] ${sizeClasses[size]}`}>
       {emojiArray.map((emoji, index) => (
         <div 
           key={index} 

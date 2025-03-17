@@ -6,6 +6,7 @@ class Game {
     this.id = generateRoomCode(gameConfig.ROOM_CODE_LENGTH);
     this.hostId = hostId;
     this.players = {};
+    this.disconnectedPlayers = {}; // Store disconnected players for reconnection
     this.status = 'waiting'; // waiting, playing, finished
     this.currentRound = 0;
     this.rounds = [];
@@ -50,29 +51,92 @@ class Game {
     }));
   }
 
-  addPlayer(playerId, playerName) {
-    this.players[playerId] = {
-      id: playerId,
-      name: playerName,
-      score: 0,
-      isHost: playerId === this.hostId,
-      joinedAt: Date.now(),
-      correctGuesses: [],
-      isActive: true,
-    };
+  // Handle player disconnection
+  handleDisconnect(playerId) {
+    const player = this.players[playerId];
+    if (player) {
+      // Store player data for potential reconnection
+      this.disconnectedPlayers[player.name] = {
+        ...player,
+        disconnectedAt: Date.now()
+      };
+      // Mark player as inactive but don't remove
+      player.isActive = false;
+      this.lastActivity = Date.now();
+    }
+  }
+
+  // Check if a player can reconnect
+  canReconnect(playerName) {
+    // Allow reconnection if:
+    // 1. Player is in disconnected players list
+    // 2. Player is still in active game
+    // 3. Disconnection was less than 5 minutes ago
+    const disconnectedPlayer = this.disconnectedPlayers[playerName];
+    const activePlayer = Object.values(this.players).find(p => p.name === playerName);
+    
+    if (disconnectedPlayer) {
+      const disconnectDuration = Date.now() - disconnectedPlayer.disconnectedAt;
+      return disconnectDuration < 5 * 60 * 1000; // 5 minutes
+    }
+    
+    return !!activePlayer;
+  }
+
+  // Add or reconnect a player
+  addPlayer(playerId, playerName, isReconnecting = false) {
+    // Check for existing player with same name
+    const existingPlayer = Object.values(this.players).find(p => p.name === playerName);
+    
+    if (existingPlayer) {
+      // Update existing player's socket and status
+      const oldId = existingPlayer.id;
+      this.players[playerId] = {
+        ...existingPlayer,
+        id: playerId,
+        isActive: true
+      };
+      if (oldId !== playerId && this.players[oldId]) {
+        delete this.players[oldId];
+      }
+      // Clear from disconnected players if present
+      delete this.disconnectedPlayers[playerName];
+    } else {
+      // Create new player
+      this.players[playerId] = {
+        id: playerId,
+        name: playerName,
+        score: 0,
+        isHost: playerId === this.hostId,
+        joinedAt: Date.now(),
+        correctGuesses: [],
+        isActive: true,
+      };
+    }
+
     this.lastActivity = Date.now();
     return this.players[playerId];
   }
 
   removePlayer(playerId) {
     if (this.players[playerId]) {
+      const player = this.players[playerId];
+      // Store in disconnected players before removing
+      this.disconnectedPlayers[player.name] = {
+        ...player,
+        disconnectedAt: Date.now()
+      };
       delete this.players[playerId];
       this.lastActivity = Date.now();
       
-      // If host leaves, assign a new host
-      if (playerId === this.hostId && Object.keys(this.players).length > 0) {
-        this.hostId = Object.keys(this.players)[0];
-        this.players[this.hostId].isHost = true;
+      // If host leaves, assign a new host from active players
+      if (playerId === this.hostId) {
+        const activePlayer = Object.entries(this.players).find(([_, p]) => p.isActive);
+        if (activePlayer) {
+          const [newHostId] = activePlayer;
+          this.hostId = newHostId;
+          this.players[newHostId].isHost = true;
+        }
       }
       
       return true;
@@ -312,6 +376,41 @@ class Game {
       totalPlayers: Object.keys(this.players).length,
       allGuesses: currentRound?.status === 'completed' ? currentRound.allGuesses : null
     };
+  }
+
+  /**
+   * Update a player's socket ID
+   * @param {string} oldSocketId - Previous socket ID
+   * @param {string} newSocketId - New socket ID
+   */
+  updatePlayerSocket(oldSocketId, newSocketId) {
+    if (this.players[oldSocketId]) {
+      // Copy player data to new socket ID
+      this.players[newSocketId] = {
+        ...this.players[oldSocketId],
+        id: newSocketId
+      };
+      
+      // Update host ID if needed
+      if (this.hostId === oldSocketId) {
+        this.hostId = newSocketId;
+      }
+      
+      // Update current player if needed
+      if (this.currentPlayerId === oldSocketId) {
+        this.currentPlayerId = newSocketId;
+      }
+      
+      // Update players who have answered
+      if (this.playersAnswered.includes(oldSocketId)) {
+        this.playersAnswered = this.playersAnswered.map(id => 
+          id === oldSocketId ? newSocketId : id
+        );
+      }
+      
+      // Delete old socket entry
+      delete this.players[oldSocketId];
+    }
   }
 }
 

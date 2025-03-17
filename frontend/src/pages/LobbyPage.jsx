@@ -136,7 +136,7 @@ const LobbyPage = () => {
               <button
                 onClick={handleStartGame}
                 disabled={isStarting || gameState.players.length < 2}
-                className={`btn-primary w-full max-w-md ${
+                className={`bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg py-2 px-4 w-full max-w-md ${
                   gameState.players.length < 2 ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >

@@ -13,11 +13,11 @@ const PlayerList = ({ players, currentPlayerId }) => {
           key={player.id} 
           className={`flex items-center p-3 rounded-lg ${
             player.id === currentPlayerId 
-              ? 'bg-primary/10 border border-primary/20' 
+              ? 'bg-blue-50 border border-blue-200' 
               : 'bg-white border border-gray-100'
-          }`}
+          } transition-all hover:shadow-sm`}
         >
-          <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center mr-3">
+          <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3 font-medium">
             {player.name.charAt(0).toUpperCase()}
           </div>
           
@@ -25,10 +25,10 @@ const PlayerList = ({ players, currentPlayerId }) => {
             <div className="flex items-center">
               <p className="font-medium">
                 {player.name} 
-                {player.id === currentPlayerId && <span className="text-xs ml-2">(You)</span>}
+                {player.id === currentPlayerId && <span className="text-xs ml-2 text-blue-600">(You)</span>}
               </p>
               {player.isHost && (
-                <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
+                <span className="ml-2 text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">
                   Host
                 </span>
               )}
@@ -36,7 +36,7 @@ const PlayerList = ({ players, currentPlayerId }) => {
           </div>
           
           <div className="text-right">
-            <span className="font-bold">{player.score}</span>
+            <span className="font-bold text-blue-700">{player.score}</span>
             <span className="text-gray-500 text-sm ml-1">pts</span>
           </div>
         </div>

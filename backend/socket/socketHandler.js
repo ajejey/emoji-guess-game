@@ -4,13 +4,126 @@ const { sanitizeGameState } = require('../utils/gameUtils');
 // Store active games in memory
 const activeGames = {};
 
-/**
- * Initialize socket.io event handlers
- * @param {Object} io - Socket.io server instance
- */
+// Initialize socket.io event handlers
 function initializeSocketHandlers(io) {
   io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
+
+    // Handle socket disconnection
+    socket.on('disconnect', () => {
+      console.log('User disconnected:', socket.id);
+      // Find the game this socket was in
+      const game = Object.values(activeGames).find(g => g.players[socket.id]);
+      if (game) {
+        game.handleDisconnect(socket.id);
+        // Notify other players
+        socket.to(game.id).emit('player_disconnected', {
+          playerId: socket.id,
+          gameState: game.getPublicGameState()
+        });
+      }
+    });
+    
+    // Handle player reconnection
+    socket.on('rejoin_game', ({ gameId, playerName, previousPlayerId, savedGameState }, callback) => {
+      try {
+        console.log(`Player ${playerName} attempting to rejoin game ${gameId}`);
+        let game = activeGames[gameId];
+        
+        // If game not found but we have saved state from host, restore it
+        if (!game && savedGameState) {
+          console.log('Restoring game from host saved state:', gameId);
+          game = new Game(savedGameState.hostId, savedGameState.settings);
+          // Restore game state
+          Object.assign(game, {
+            ...savedGameState,
+            players: {}, // Reset players since they'll rejoin
+            disconnectedPlayers: {} // Reset disconnected players
+          });
+          activeGames[gameId] = game;
+        }
+        
+        if (!game) {
+          console.log(`Game not found: ${gameId}`);
+          return callback({ success: false, message: 'Game not found' });
+        }
+
+        // Check if player can reconnect
+        if (!game.canReconnect(playerName)) {
+          console.log(`Player ${playerName} cannot reconnect to game ${gameId}`);
+          return callback({ success: false, message: 'Cannot rejoin this game' });
+        }
+
+        // Add/update the player
+        const player = game.addPlayer(socket.id, playerName, true);
+        
+        // Join socket room
+        socket.join(gameId);
+        
+        // Notify all players about the reconnection
+        io.to(gameId).emit('player_reconnected', {
+          playerId: socket.id,
+          playerName,
+          gameState: game.getPublicGameState()
+        });
+        
+        callback({ 
+          success: true, 
+          gameId: game.id,
+          playerId: socket.id,
+          gameState: game.getPublicGameState()
+        });
+        
+        console.log(`Player ${playerName} rejoined game: ${gameId}`);
+      } catch (error) {
+        console.error('Error rejoining game:', error);
+        callback({ success: false, message: 'Failed to rejoin game' });
+      }
+    });
+
+    // Join an existing game
+    socket.on('join_game', ({ gameId, playerName }, callback) => {
+      try {
+        console.log(`Player ${playerName} attempting to join game ${gameId}`);
+        const game = activeGames[gameId];
+        
+        if (!game) {
+          console.log(`Game not found: ${gameId}`);
+          return callback({ success: false, message: 'Game not found' });
+        }
+
+        // Check if player is already in the game or can reconnect
+        if (game.status === 'playing' && !game.canReconnect(playerName)) {
+          console.log(`Cannot join game in progress: ${gameId}`);
+          return callback({ success: false, message: 'Cannot join a game in progress' });
+        }
+        
+        // Add/update the player
+        const player = game.addPlayer(socket.id, playerName);
+        
+        // Join socket room
+        socket.join(gameId);
+        
+        // Notify all players
+        io.to(gameId).emit('player_joined', {
+          playerId: socket.id,
+          playerName,
+          gameState: game.getPublicGameState()
+        });
+        
+        callback({ 
+          success: true, 
+          gameId: game.id,
+          playerId: socket.id,
+          gameState: game.getPublicGameState()
+        });
+        
+        console.log(`Player ${playerName} joined game: ${gameId}`);
+      } catch (error) {
+        console.error('Error joining game:', error);
+        callback({ success: false, message: 'Failed to join game' });
+      }
+    });
     
     // Create a new game room
     socket.on('create_game', ({ playerName, gameSettings }, callback) => {
@@ -37,50 +150,6 @@ function initializeSocketHandlers(io) {
       } catch (error) {
         console.error('Error creating game:', error);
         callback({ success: false, message: 'Failed to create game' });
-      }
-    });
-    
-    // Join an existing game
-    socket.on('join_game', ({ gameId, playerName }, callback) => {
-      try {
-        console.log(`Player ${playerName} attempting to join game ${gameId}`);
-        const game = activeGames[gameId];
-        
-        if (!game) {
-          console.log(`Game not found: ${gameId}`);
-          return callback({ success: false, message: 'Game not found' });
-        }
-        
-        if (game.status === 'playing' && !game.players[socket.id]) {
-          console.log(`Cannot join game in progress: ${gameId}`);
-          return callback({ success: false, message: 'Cannot join a game in progress' });
-        }
-        
-        // Add player to game
-        game.addPlayer(socket.id, playerName);
-        
-        // Join socket room
-        socket.join(gameId);
-        
-        // Notify all players about the new player
-        io.to(gameId).emit('player_joined', {
-          playerId: socket.id,
-          playerName,
-          gameState: game.getPublicGameState()
-        });
-        
-        // Send game info back to client
-        callback({ 
-          success: true, 
-          gameId: game.id,
-          playerId: socket.id,
-          gameState: game.getPublicGameState()
-        });
-        
-        console.log(`Player ${playerName} joined game: ${gameId}`);
-      } catch (error) {
-        console.error('Error joining game:', error);
-        callback({ success: false, message: 'Failed to join game' });
       }
     });
     
@@ -290,36 +359,6 @@ function initializeSocketHandlers(io) {
       } catch (error) {
         console.error('Error sending message:', error);
       }
-    });
-    
-    // Handle disconnection
-    socket.on('disconnect', () => {
-      console.log('User disconnected:', socket.id);
-      
-      // Find any games the player is part of
-      Object.values(activeGames).forEach(game => {
-        if (game.players[socket.id]) {
-          const playerName = game.players[socket.id].name;
-          const wasRemoved = game.removePlayer(socket.id);
-          
-          if (wasRemoved) {
-            // Notify remaining players
-            io.to(game.id).emit('player_left', {
-              playerId: socket.id,
-              playerName,
-              gameState: game.getPublicGameState()
-            });
-            
-            console.log(`Player ${playerName} removed from game ${game.id}`);
-            
-            // If no players left, clean up the game
-            if (Object.keys(game.players).length === 0) {
-              delete activeGames[game.id];
-              console.log(`Game ${game.id} removed due to no players`);
-            }
-          }
-        }
-      });
     });
   });
 }
