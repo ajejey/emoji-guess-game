@@ -5,8 +5,10 @@ let socket;
 
 // Initialize the socket connection
 export const initializeSocket = () => {
-  console.log('socketService: Initializing socket connection to http://localhost:3000');
-  socket = io('http://localhost:3000', {
+  // console.log('socketService: Initializing socket connection to http://localhost:3000');
+  const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+  console.log(`socketService: Initializing socket connection to ${VITE_BACKEND_URL}`);
+  socket = io(VITE_BACKEND_URL, {
     transports: ['websocket'],
     autoConnect: true
   });
