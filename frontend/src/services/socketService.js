@@ -1,19 +1,14 @@
 import { io } from 'socket.io-client';
 
-// Get the backend URL based on environment
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-
 // Create a socket instance
 let socket;
 
 // Initialize the socket connection
 export const initializeSocket = () => {
-  console.log('socketService: Initializing socket connection to', BACKEND_URL);
-  socket = io(BACKEND_URL, {
+  console.log('socketService: Initializing socket connection to http://localhost:3000');
+  socket = io('http://localhost:3000', {
     transports: ['websocket'],
-    autoConnect: true,
-    withCredentials: true,
-    timeout: 10000
+    autoConnect: true
   });
 
   // Set up event listeners for connection events
@@ -26,9 +21,9 @@ export const initializeSocket = () => {
   });
 
   socket.on('disconnect', (reason) => {
-    console.log('socketService: Disconnected:', reason);
+    console.log('socketService: Disconnected from server:', reason);
   });
-
+  
   socket.on('error', (error) => {
     console.error('socketService: Socket error:', error);
   });
