@@ -52,8 +52,14 @@ function isCorrectGuess(guess, answer) {
     return true;
   }
   
+  // Check without spaces
+  const guessNoSpaces = normalizedGuess.replace(/\s/g, '');
+  const answerNoSpaces = normalizedAnswer.replace(/\s/g, '');
+  if (guessNoSpaces === answerNoSpaces) {
+    return true;
+  }
+  
   // Check for close matches (could be expanded with more sophisticated matching)
-  // For example, "The Batman" vs "Batman" could be considered correct
   const guessWords = normalizedGuess.split(' ');
   const answerWords = normalizedAnswer.split(' ');
   
@@ -63,12 +69,20 @@ function isCorrectGuess(guess, answer) {
     if (normalizedGuess === answerWithoutArticle) {
       return true;
     }
+    // Also check without spaces for the version without articles
+    if (guessNoSpaces === answerWithoutArticle.replace(/\s/g, '')) {
+      return true;
+    }
   }
   
   // Same for guess
   if (guessWords[0] === 'the' || guessWords[0] === 'a' || guessWords[0] === 'an') {
     const guessWithoutArticle = guessWords.slice(1).join(' ');
     if (guessWithoutArticle === normalizedAnswer) {
+      return true;
+    }
+    // Also check without spaces for the version without articles
+    if (guessWithoutArticle.replace(/\s/g, '') === answerNoSpaces) {
       return true;
     }
   }

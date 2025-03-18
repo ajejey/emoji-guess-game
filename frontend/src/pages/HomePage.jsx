@@ -18,7 +18,22 @@ const HomePage = () => {
   const [gameSettings, setGameSettings] = useState({
     roundTime: 60,
     roundsPerGame: 5,
-    categories: ['Movies', 'Phrases', 'Nature']
+    categories: [
+      'Food',
+      'Media',
+      'Nature',
+      "Actions",
+      "Design",
+      "Animals",
+      "History",
+      "Culture",
+      "Entertainment",
+      "Technology",
+      "Space",
+      "Sports",
+      "Emotions",
+      "Business"
+    ]
   });
 
   const handleCreateGame = async (e) => {
@@ -225,6 +240,8 @@ const HomePage = () => {
                     <option value={5}>5 rounds</option>
                     <option value={7}>7 rounds</option>
                     <option value={10}>10 rounds</option>
+                    <option value={15}>15 rounds</option>
+                    <option value={20}>20 rounds</option>
                   </select>
                 </div>
                 

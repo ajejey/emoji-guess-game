@@ -5,6 +5,7 @@ import { submitGuess } from '../services/socketService';
 import EmojiDisplay from '../components/EmojiDisplay';
 import PlayerList from '../components/PlayerList';
 import ChatBox from '../components/ChatBox';
+import Confetti from 'react-confetti';
 
 const GamePage = () => {
   const { gameId } = useParams();
@@ -238,11 +239,11 @@ const GamePage = () => {
   }, [gameId, startNextRound, setError]);
 
   // If loading or reconnecting, show loading screen
-  if (loading || isReconnecting || !gameState) {
+  if (isReconnecting || !gameState) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">
             {isReconnecting ? 'Reconnecting to game...' : 'Loading game...'}
           </p>
@@ -281,35 +282,33 @@ const GamePage = () => {
     };
 
     return (
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-screen bg-gradient-to-b from-indigo-500 to-purple-600 p-4">
         <div className="max-w-4xl mx-auto">
-          <div className="card">
-            <h1 className="text-3xl font-bold text-center mb-8">Game Over!</h1>
+          <div className="bg-white rounded-xl shadow-2xl p-4">
+            <h1 className="text-4xl font-extrabold text-center mb-8 text-indigo-800">🎉 Game Over! 🎊</h1>
 
-            <div className="bg-primary/10 rounded-xl p-6 mb-8">
-              <h2 className="text-xl font-semibold text-center mb-4">Final Standings</h2>
+            <div className="bg-gradient-to-r from-yellow-200 to-yellow-100 rounded-xl p-6 mb-8 shadow-inner">
+              <h2 className="text-2xl font-bold text-center mb-6 text-indigo-900">🏆 Final Standings 🏆</h2>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="py-2 text-left">Rank</th>
-                      <th className="py-2 text-left">Player</th>
-                      <th className="py-2 text-right">Score</th>
-                      <th className="py-2 text-right">Correct Guesses</th>
+                    <tr className="border-b-2 border-yellow-300">
+                      <th className="py-3 px-2 text-left text-indigo-800">Rank</th>
+                      <th className="py-3 text-left text-indigo-800">Player</th>
+                      <th className="py-3 text-right text-indigo-800">Score</th>
                     </tr>
                   </thead>
                   <tbody>
                     {finalResults.playerRankings.map((player, index) => (
                       <tr
                         key={player.id}
-                        className={`border-b border-gray-100 ${index === 0 ? 'bg-yellow-50' : ''}`}
+                        className={`border-b border-yellow-200 ${index === 0 ? 'bg-yellow-300 bg-opacity-50' : ''}`}
                       >
-                        <td className="py-3">
-                          {index === 0 ? '🏆' : `#${player.rank}`}
+                        <td className="py-3 px-2 text-xl">
+                          {index === 0 ? '👑' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${player.rank}`}
                         </td>
-                        <td className="py-3 font-medium">{player.name}</td>
-                        <td className="py-3 text-right">{player.score}</td>
-                        <td className="py-3 text-right">{player.correctGuesses}</td>
+                        <td className="py-3 px-2 font-semibold text-indigo-900">{player.name}</td>
+                        <td className="py-3 px-2 text-right font-bold text-indigo-700">{player.score}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -320,9 +319,9 @@ const GamePage = () => {
             <div className="flex justify-center">
               <button
                 onClick={() => navigate('/')}
-                className="btn-primary"
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-full text-lg transform transition hover:scale-105 shadow-lg"
               >
-                Play Again
+                🎮 Play Again
               </button>
             </div>
           </div>
@@ -374,7 +373,7 @@ const GamePage = () => {
                           {guess.isCorrect ? (
                             <div className="flex items-center">
                               <span className="text-green-600 mr-2">✓</span>
-                              <span className="bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-lg font-medium">
+                              <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-medium">
                                 +{guess.score || 0} pts
                               </span>
                             </div>
@@ -419,7 +418,7 @@ const GamePage = () => {
                 <button
                   onClick={handleStartNextRound}
                   disabled={loading}
-                  className="btn-primary"
+                  className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
                 >
                   {loading ? (
                     <span className="flex items-center">
@@ -481,7 +480,7 @@ const GamePage = () => {
                     onChange={(e) => setGuess(e.target.value)}
                     disabled={correctGuess || loading}
                     placeholder={correctGuess ? "Your answer was submitted" : "Type your guess here..."}
-                    className={`w-full px-4 py-2.5 rounded-lg border ${correctGuess ? 'bg-green-50 border-green-300 text-green-700' : 'border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20'} outline-none transition duration-200 pr-24 shadow-sm`}
+                    className={`w-full px-4 py-2.5 rounded-lg border ${correctGuess ? 'bg-green-50 border-green-300 text-green-700' : 'border-gray-300 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-300/20'} outline-none transition duration-200 pr-24 shadow-sm`}
                   />
                   <button
                     type="submit"

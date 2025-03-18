@@ -1,5 +1,5 @@
 const gameConfig = require('../config/gameConfig');
-const { generateRoomCode, calculateScore } = require('../utils/gameUtils');
+const { generateRoomCode, calculateScore, isCorrectGuess } = require('../utils/gameUtils');
 
 class Game {
   constructor(hostId, settings = {}) {
@@ -13,7 +13,22 @@ class Game {
     this.settings = {
       roundTime: settings.roundTime || gameConfig.DEFAULT_ROUND_TIME,
       roundsPerGame: settings.roundsPerGame || gameConfig.DEFAULT_ROUNDS_PER_GAME,
-      categories: settings.categories || ['Movies', 'Phrases', 'Nature'],
+      categories: settings.categories || [
+        'Food',
+        'Media',
+        'Nature',
+        "Actions",
+        "Design",
+        "Animals",
+        "History",
+        "Culture",
+        "Entertainment",
+        "Technology",
+        "Space",
+        "Sports",
+        "Emotions",
+        "Business"
+      ],
       customPuzzles: settings.customPuzzles || [],
     };
     this.messages = [];
@@ -34,10 +49,15 @@ class Game {
           this.settings.categories.includes(puzzle.category)
         );
     
+    console.log("Puzzle Pool:", puzzlePool);
+    console.log("Selected Puzzles:", puzzlePool);
+    
     // Shuffle and select puzzles for the game
     const shuffled = [...puzzlePool].sort(() => 0.5 - Math.random());
     const selectedPuzzles = shuffled.slice(0, this.settings.roundsPerGame);
     
+    console.log("Selected Puzzles:", selectedPuzzles);
+
     this.rounds = selectedPuzzles.map((puzzle, index) => ({
       roundNumber: index + 1,
       emojis: puzzle.emojis,
@@ -244,14 +264,11 @@ class Game {
       return { success: false, message: 'You already guessed correctly' };
     }
     
-    const normalizedGuess = guess.toLowerCase().trim();
-    const isCorrect = normalizedGuess === round.answer.toLowerCase();
+    const isCorrect = isCorrectGuess(guess, round.answer);
     
     if (isCorrect) {
       const timeLeft = Math.max(0, (round.endTime - Date.now()) / 1000);
       const isFirstCorrect = round.correctGuesses.length === 0;
-      
-      // Calculate score
       const score = calculateScore({
         isFirstCorrect,
         timeLeft,
@@ -278,10 +295,10 @@ class Game {
       round.allGuesses.push({
         playerId,
         playerName: player.name,
-        guess: normalizedGuess,
+        guess: guess.trim(), // Store the original guess for UI display
         timestamp: Date.now(),
         isCorrect,
-        score // Add score for correct guesses
+        score
       });
       
       this.lastActivity = Date.now();
@@ -297,10 +314,10 @@ class Game {
     round.allGuesses.push({
       playerId,
       playerName: player.name,
-      guess: normalizedGuess,
+      guess: guess.trim(), // Store the original guess for UI display
       timestamp: Date.now(),
-      isCorrect: false,
-      score: 0 // Zero score for incorrect guesses
+      isCorrect,
+      score: 0
     });
     
     return { 
