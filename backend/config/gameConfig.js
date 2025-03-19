@@ -19,25 +19,25 @@ module.exports = {
   // Sample emoji puzzles (for testing)
   SAMPLE_PUZZLES: [
     { emojis: "🍪", answer: "Cookie", category: "Food" },
-    { emojis: "🌈", answer: "Rainbow", category: "Nature" },
+    { emojis: "🌧️ + 🎀", answer: "Rainbow", category: "Nature" },
     { emojis: "📺", answer: "Channel", category: "Media" },
-    { emojis: "🐻📻", answer: "BBC", category: "Media" },
+    { emojis: "🐝+🐝+👀 ", answer: "BBC", category: "Media" },
     { emojis: "🤝", answer: "Shake Hand", category: "Actions" },
-    { emojis: "💤🦉", answer: "Sleepy Owl", category: "Animals" },
+    { emojis: "💤 + 🦉", answer: "Sleepy Owl", category: "Animals" },
     { emojis: "🔵🖨️", answer: "Blue Print", category: "Design" },
-    { emojis: "⛰️🧔", answer: "Caveman", category: "History" },
-    { emojis: "👘🎨", answer: "Asian Paints", category: "Culture" },
-    { emojis: "🦑🎮", answer: "Squid Game", category: "Entertainment" },
-    { emojis: "📱👤", answer: "Face Time", category: "Technology" },
-    { emojis: "🍯🥪", answer: "Mayonnaise", category: "Food" },
-    { emojis: "🧳📦", answer: "Collector", category: "Actions" },
-    { emojis: "🚀", answer: "Rocket", category: "Space" },
-    { emojis: "🏒", answer: "Hockey", category: "Sports" },
+    { emojis: "⛰️ + 🧔", answer: "Caveman", category: "History" },
+    { emojis: "👘 +🎨 ", answer: "Asian Paints", category: "Culture" },
+    { emojis: "🐙 + 🎮 +² ² ²", answer: "Squid Game 2", category: "Entertainment" },
+    { emojis: "👩🏻‍💻 + 𝟏𝟏:𝟏𝟏", answer: "Face Time", category: "Technology" },
+    { emojis: "🎙️ + 🅾 + 🧎🏼", answer: "Mayonnaise", category: "Food" },
+    { emojis: "📞 + ✉ ", answer: "Collector", category: "Actions" },
+    { emojis: "🏔️ + ₍^. .^₎⟆", answer: "Rocket", category: "Space" },
+    { emojis: "🥅 +⚾ +🗝️", answer: "Hockey", category: "Sports" },
     { emojis: "💔", answer: "Heart Break", category: "Emotions" },
-    { emojis: "🌌 🚢", answer: "Spaceship", category: "Space" },
-    { emojis: "🐘", answer: "Elephant", category: "Animals" },
-    { emojis: "💻⊞", answer: "Microsoft", category: "Technology" },
-    { emojis: "🏭🔧", answer: "Industry", category: "Business" }
+    { emojis: "🌌 + 🚢 ", answer: "Spaceship", category: "Space" },
+    { emojis: "👋+😁+👖", answer: "Elephant", category: "Animals" },
+    { emojis: "🎤 + ⛰️ + 🌐", answer: "Microsoft", category: "Technology" },
+    { emojis: "📥 +🧹💨 +🌴", answer: "Industry", category: "Business" }
   ]
 
   // SAMPLE_PUZZLES: [
