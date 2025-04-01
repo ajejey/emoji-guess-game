@@ -3,7 +3,8 @@ const { generateRoomCode, calculateScore, isCorrectGuess } = require('../utils/g
 
 class Game {
   constructor(hostId, settings = {}) {
-    this.id = generateRoomCode(gameConfig.ROOM_CODE_LENGTH);
+    // If we're restoring from localStorage, we might have an existing ID
+    this.id = settings.id || generateRoomCode(gameConfig.ROOM_CODE_LENGTH);
     this.hostId = hostId;
     this.players = {};
     this.disconnectedPlayers = {}; // Store disconnected players for reconnection
@@ -37,8 +38,14 @@ class Game {
     this.createdAt = Date.now();
     this.lastActivity = Date.now();
     
-    // Initialize rounds with puzzles
-    this._initializeRounds();
+    // Initialize rounds with puzzles if we don't have them already
+    // This prevents overwriting rounds when restoring from localStorage
+    if (!settings.rounds || settings.rounds.length === 0) {
+      this._initializeRounds();
+    } else {
+      console.log('Game: Restoring rounds from localStorage');
+      this.rounds = settings.rounds;
+    }
   }
 
   _initializeRounds() {
@@ -78,11 +85,14 @@ class Game {
       // Store player data for potential reconnection
       this.disconnectedPlayers[player.name] = {
         ...player,
-        disconnectedAt: Date.now()
+        disconnectedAt: Date.now(),
+        isHost: player.isHost // Explicitly store host status
       };
       // Mark player as inactive but don't remove
       player.isActive = false;
       this.lastActivity = Date.now();
+      
+      console.log(`Player ${player.name} disconnected. isHost: ${player.isHost}`);
     }
   }
 
@@ -108,6 +118,10 @@ class Game {
     // Check for existing player with same name
     const existingPlayer = Object.values(this.players).find(p => p.name === playerName);
     
+    // Check if this player was the host based on name
+    const wasHost = existingPlayer ? existingPlayer.isHost : false;
+    const isHostByName = this.disconnectedPlayers[playerName]?.isHost || false;
+    
     if (existingPlayer) {
       // Update existing player's socket and status
       const oldId = existingPlayer.id;
@@ -121,13 +135,19 @@ class Game {
       }
       // Clear from disconnected players if present
       delete this.disconnectedPlayers[playerName];
+      
+      // If this player was the host, update the hostId
+      if (wasHost) {
+        console.log(`Restoring host privileges to ${playerName} with ID ${playerId}`);
+        this.hostId = playerId;
+      }
     } else {
       // Create new player
       this.players[playerId] = {
         id: playerId,
         name: playerName,
         score: 0,
-        isHost: playerId === this.hostId,
+        isHost: playerId === this.hostId || isHostByName,
         joinedAt: Date.now(),
         correctGuesses: [],
         isActive: true,
@@ -348,10 +368,13 @@ class Game {
       players: this.players,
       status: this.status,
       currentRound: this.currentRound,
+      rounds: this.rounds, // Include rounds for complete restoration
       settings: this.settings,
       roundStartTime: this.roundStartTime,
       roundEndTime: this.roundEndTime,
-      lastActivity: this.lastActivity
+      messages: this.messages, // Include messages for complete restoration
+      lastActivity: this.lastActivity,
+      createdAt: this.createdAt
     };
   }
 

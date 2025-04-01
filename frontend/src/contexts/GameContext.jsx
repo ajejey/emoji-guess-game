@@ -27,14 +27,23 @@ export const GameProvider = ({ children }) => {
         gameId,
         playerId: player.id,
         playerName: player.name,
-        isHost: player.id === gameState?.hostId,
+        isHost: player.isHost || isHost || player.id === gameState?.hostId,
         timestamp: Date.now()
       };
+      
+      console.log(`GameContext: Saving game session. Player ${player.name} isHost: ${gameSession.isHost}`);
       localStorage.setItem('emojiGameSession', JSON.stringify(gameSession));
 
-      // If host, save the full game state
-      if (gameState && player.id === gameState.hostId) {
-        saveGameState(gameState);
+      // Always save the game state for all players
+      // This ensures redundancy and makes localStorage the source of truth
+      if (gameState) {
+        // If this player is the host, make sure the hostId in the saved state matches
+        const stateToSave = gameSession.isHost ? {
+          ...gameState,
+          hostId: player.id // Ensure host ID is correct
+        } : gameState;
+        
+        saveGameState(stateToSave);
       }
     }
   };
@@ -42,7 +51,7 @@ export const GameProvider = ({ children }) => {
   // Save full game state
   const saveGameState = (state) => {
     if (state && state.id) {
-      console.log('GameContext: Saving game state to localStorage');
+      console.log('GameContext: Saving game state to localStorage - source of truth');
       localStorage.setItem(`emojiGame_${state.id}`, JSON.stringify({
         gameState: state,
         timestamp: Date.now()
@@ -51,9 +60,11 @@ export const GameProvider = ({ children }) => {
   };
 
   // Effect to save game state whenever it changes
+  // Now saving for all players, not just the host
   useEffect(() => {
-    if (gameState && player?.id === gameState.hostId) {
+    if (gameState) {
       saveGameState(gameState);
+      saveGameSession();
     }
   }, [gameState, player]);
 
@@ -87,15 +98,15 @@ export const GameProvider = ({ children }) => {
               setIsReconnecting(true);
               console.log('GameContext: Attempting to rejoin game:', session.gameId);
               
-              // If this client was the host, get the saved game state
+              // Get the saved game state from any player
+              // This makes localStorage the source of truth
               let savedGameState = null;
-              if (session.isHost) {
-                const savedData = localStorage.getItem(`emojiGame_${session.gameId}`);
-                if (savedData) {
-                  const data = JSON.parse(savedData);
-                  if (Date.now() - data.timestamp < 30 * 60 * 1000) {
-                    savedGameState = data.gameState;
-                  }
+              const savedData = localStorage.getItem(`emojiGame_${session.gameId}`);
+              if (savedData) {
+                const data = JSON.parse(savedData);
+                if (Date.now() - data.timestamp < 30 * 60 * 1000) {
+                  savedGameState = data.gameState;
+                  console.log('GameContext: Found saved game state in localStorage');
                 }
               }
 
@@ -107,10 +118,23 @@ export const GameProvider = ({ children }) => {
               }, (response) => {
                 if (response.success) {
                   console.log('GameContext: Successfully rejoined game');
+                  
+                  // Check if this player is the host directly from the response
+                  // This ensures host status is correctly restored
+                  const isPlayerHost = response.isHost || 
+                    (response.gameState && response.gameState.hostId === response.playerId) || 
+                    session.isHost;
+                  
+                  console.log(`GameContext: Player host status: ${isPlayerHost}`);
+                  
                   setGameId(session.gameId);
-                  setPlayer({ id: response.playerId, name: session.playerName });
+                  setPlayer({ 
+                    id: response.playerId, 
+                    name: session.playerName,
+                    isHost: isPlayerHost
+                  });
                   setGameState(response.gameState);
-                  setIsHost(response.gameState.hostId === response.playerId);
+                  setIsHost(isPlayerHost);
                   saveGameSession();
                 } else {
                   console.log('GameContext: Failed to rejoin game:', response.message);
@@ -232,6 +256,15 @@ export const GameProvider = ({ children }) => {
       setGameState(gameState);
       setGameResults(gameResults);
       setCurrentRound(null);
+      
+      // Schedule localStorage cleanup after players have seen the results
+      // This delay ensures players can still see the final game state
+      setTimeout(() => {
+        if (gameState && gameState.id) {
+          console.log('GameContext: Cleaning up localStorage after game end');
+          clearGameStorage(gameState.id);
+        }
+      }, 5 * 60 * 1000); // Clean up after 5 minutes
     });
 
     // Correct guess event
@@ -269,8 +302,31 @@ export const GameProvider = ({ children }) => {
     };
   }, [socket]);
 
-  // Reset game state
+  // Clear localStorage for a specific game
+  const clearGameStorage = (gameIdToClear) => {
+    if (gameIdToClear) {
+      console.log('GameContext: Clearing localStorage for game', gameIdToClear);
+      localStorage.removeItem(`emojiGame_${gameIdToClear}`);
+      
+      // Also clear session if it matches this game
+      const savedSession = localStorage.getItem('emojiGameSession');
+      if (savedSession) {
+        const session = JSON.parse(savedSession);
+        if (session.gameId === gameIdToClear) {
+          localStorage.removeItem('emojiGameSession');
+        }
+      }
+    }
+  };
+  
+  // Reset game state and clear localStorage
   const resetGame = () => {
+    // Clear localStorage for the current game if applicable
+    if (gameId) {
+      clearGameStorage(gameId);
+    }
+    
+    // Reset state
     setGameState(null);
     setPlayer(null);
     setGameId(null);
@@ -292,10 +348,19 @@ export const GameProvider = ({ children }) => {
       socket.emit('join_game', { gameId, playerName }, (response) => {
         console.log('GameContext: Join game response', response);
         if (response.success) {
+          // Check if this player is the host directly from the response
+          const isPlayerHost = response.isHost || 
+            (response.gameState && response.gameState.hostId === response.playerId);
+          
+          console.log(`GameContext: Player ${playerName} joining as host: ${isPlayerHost}`);
+          
           setGameId(gameId);
-          setPlayer({ id: response.playerId, name: playerName, isHost: response.isHost });
+          setPlayer({ id: response.playerId, name: playerName, isHost: isPlayerHost });
           setGameState(response.gameState);
-          setIsHost(response.gameState.hostId === response.playerId);
+          setIsHost(isPlayerHost);
+          
+          // Save session immediately to persist host status
+          setTimeout(() => saveGameSession(), 100);
           resolve(response);
         } else {
           reject(new Error(response.message || 'Failed to join game'));
@@ -369,6 +434,7 @@ export const GameProvider = ({ children }) => {
     isConnected,
     isHost,
     resetGame,
+    clearGameStorage,
     joinGame: joinGameHandler,
     sendMessage: sendMessageHandler,
     endRound: endRoundHandler,

@@ -45,6 +45,27 @@ export const getSocket = () => {
 
 // Create a game room
 export const createGame = (playerName, gameSettings) => {
+  // Clear any existing game session data from localStorage
+  // This ensures we don't have stale data when creating a new game
+  const clearExistingGameData = () => {
+    console.log('socketService: Clearing existing game data from localStorage');
+    
+    // Clear session data
+    localStorage.removeItem('emojiGameSession');
+    
+    // Find and clear any game state data
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('emojiGame_')) {
+        console.log('socketService: Removing stored game data:', key);
+        localStorage.removeItem(key);
+      }
+    }
+  };
+  
+  // Clear existing data before creating a new game
+  clearExistingGameData();
+  
   return new Promise((resolve, reject) => {
     const socket = getSocket();
     socket.emit('create_game', { playerName, gameSettings }, (response) => {
