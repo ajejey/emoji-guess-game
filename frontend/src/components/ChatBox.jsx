@@ -69,6 +69,7 @@ const ChatBox = ({ messages, gameId, currentPlayerId }) => {
               fill="none" 
               viewBox="0 0 24 24" 
               stroke="currentColor"
+              transform="rotate(90)"
             >
               <path 
                 strokeLinecap="round" 

@@ -111,10 +111,25 @@ function initializeSocketHandlers(io) {
     socket.on('join_game', ({ gameId, playerName }, callback) => {
       try {
         console.log(`Player ${playerName} attempting to join game ${gameId}`);
-        const game = activeGames[gameId];
+        console.log(`Active games: ${Object.keys(activeGames).join(', ')}`);
+        
+        // Check for case sensitivity issues
+        const exactMatch = activeGames[gameId];
+        let game = exactMatch;
+        
+        // If no exact match, try case-insensitive match
+        if (!exactMatch) {
+          const lowerGameId = gameId.toLowerCase();
+          const matchingKey = Object.keys(activeGames).find(key => key.toLowerCase() === lowerGameId);
+          
+          if (matchingKey) {
+            console.log(`Found case-insensitive match for game ID: ${matchingKey}`);
+            game = activeGames[matchingKey];
+          }
+        }
         
         if (!game) {
-          console.log(`Game not found: ${gameId}`);
+          console.log(`Game not found: ${gameId}. Available games: ${Object.keys(activeGames).length}`);
           return callback({ success: false, message: 'Game not found' });
         }
 
@@ -367,10 +382,12 @@ function initializeSocketHandlers(io) {
         
         callback(result);
         
-        // If the guess was correct, notify all players
+        // Get the updated game state with the new player answer count
+        const updatedGameState = game.getPublicGameState();
+        
+        // If the guess was correct, notify all players with a specific event
         if (result.isCorrect) {
           const player = game.players[socket.id];
-          const updatedGameState = game.getPublicGameState();
           
           io.to(gameId).emit('correct_guess', {
             playerId: socket.id,
@@ -379,6 +396,12 @@ function initializeSocketHandlers(io) {
             gameState: updatedGameState
           });
         }
+        
+        // Always broadcast a game state update for all guesses (correct or incorrect)
+        // This ensures the player count updates for everyone
+        io.to(gameId).emit('game_state_update', {
+          gameState: updatedGameState
+        });
       } catch (error) {
         console.error('Error submitting guess:', error);
         callback({ success: false, message: 'Failed to submit guess' });

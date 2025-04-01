@@ -279,9 +279,18 @@ export const GameProvider = ({ children }) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
     
-    // Game state update event
+    // Game state update event (legacy)
     socket.on('gameState', (updatedGameState) => {
-      console.log('GameContext: Game state update received', updatedGameState);
+      console.log('GameContext: Game state update received (legacy)', updatedGameState);
+      setGameState(updatedGameState);
+    });
+    
+    // Game state update event (new format)
+    socket.on('game_state_update', ({ gameState: updatedGameState }) => {
+      console.log('GameContext: Game state update received', {
+        playersAnswered: updatedGameState?.playersAnswered,
+        totalPlayers: updatedGameState?.totalPlayers
+      });
       setGameState(updatedGameState);
     });
 

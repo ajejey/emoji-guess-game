@@ -68,12 +68,53 @@ export const createGame = (playerName, gameSettings) => {
   
   return new Promise((resolve, reject) => {
     const socket = getSocket();
-    socket.emit('create_game', { playerName, gameSettings }, (response) => {
-      if (response.success) {
-        resolve(response);
-      } else {
-        reject(new Error(response.message || 'Failed to create game'));
-      }
+    
+    // Ensure socket is connected before attempting to create a game
+    const ensureConnected = () => {
+      return new Promise((connectResolve) => {
+        if (socket.connected) {
+          console.log('socketService: Socket already connected, proceeding with create');
+          connectResolve();
+          return;
+        }
+        
+        console.log('socketService: Socket not connected, waiting for connection...');
+        
+        // Set up a one-time connect event handler
+        const onConnect = () => {
+          console.log('socketService: Socket connected, now proceeding with create');
+          socket.off('connect', onConnect);
+          connectResolve();
+        };
+        
+        socket.once('connect', onConnect);
+        
+        // If not connected after 3 seconds, proceed anyway (might still work)
+        setTimeout(() => {
+          socket.off('connect', onConnect);
+          console.warn('socketService: Proceeding with create despite connection uncertainty');
+          connectResolve();
+        }, 3000);
+      });
+    };
+    
+    // Wait for connection, then attempt to create
+    ensureConnected().then(() => {
+      console.log('socketService: Emitting create_game event', { playerName });
+      
+      socket.emit('create_game', { playerName, gameSettings }, (response) => {
+        if (response.success) {
+          resolve(response);
+        } else {
+          reject(new Error(response.message || 'Failed to create game'));
+        }
+      });
+      
+      // Add a timeout in case the server doesn't respond
+      setTimeout(() => {
+        console.warn('socketService: Create game timeout after 5 seconds');
+        reject(new Error('Server did not respond in time'));
+      }, 5000);
     });
   });
 };
@@ -83,26 +124,69 @@ export const joinGame = (gameId, playerName) => {
   console.log('socketService: Joining game', { gameId, playerName });
   return new Promise((resolve, reject) => {
     const socket = getSocket();
-    if (!socket.connected) {
-      console.warn('socketService: Socket not connected when trying to join game');
-    }
     
-    socket.emit('join_game', { gameId, playerName }, (response) => {
-      console.log('socketService: Join game response received', response);
-      if (response && response.success) {
-        resolve(response);
-      } else {
-        const errorMsg = response?.message || 'Failed to join game';
-        console.error('socketService: Join game error', errorMsg);
-        reject(new Error(errorMsg));
-      }
+    // Ensure socket is connected before attempting to join
+    const ensureConnected = () => {
+      return new Promise((connectResolve) => {
+        if (socket.connected) {
+          console.log('socketService: Socket already connected, proceeding with join');
+          connectResolve();
+          return;
+        }
+        
+        console.log('socketService: Socket not connected, waiting for connection...');
+        
+        // Set up a one-time connect event handler
+        const onConnect = () => {
+          console.log('socketService: Socket connected, now proceeding with join');
+          socket.off('connect', onConnect);
+          connectResolve();
+        };
+        
+        socket.once('connect', onConnect);
+        
+        // If not connected after 3 seconds, proceed anyway (might still work)
+        setTimeout(() => {
+          socket.off('connect', onConnect);
+          console.warn('socketService: Proceeding with join despite connection uncertainty');
+          connectResolve();
+        }, 3000);
+      });
+    };
+    
+    // Wait for connection, then attempt to join
+    ensureConnected().then(() => {
+      console.log('socketService: Emitting join_game event', { gameId, playerName });
+      
+      // Normalize game ID to prevent case sensitivity issues
+      const normalizedGameId = gameId.trim();
+      
+      console.log(`socketService: Attempting to join game with ID: "${normalizedGameId}"`);
+      
+      socket.emit('join_game', { gameId: normalizedGameId, playerName }, (response) => {
+        console.log('socketService: Join game response received', response);
+        if (response && response.success) {
+          console.log(`socketService: Successfully joined game ${normalizedGameId}`);
+          resolve(response);
+        } else {
+          const errorMsg = response?.message || 'Failed to join game';
+          console.error(`socketService: Join game error for game "${normalizedGameId}": ${errorMsg}`);
+          
+          // Provide more helpful error message
+          if (errorMsg.includes('not found')) {
+            reject(new Error(`Game with ID "${normalizedGameId}" not found. Please check the game code and try again.`));
+          } else {
+            reject(new Error(errorMsg));
+          }
+        }
+      });
+      
+      // Add a timeout in case the server doesn't respond
+      setTimeout(() => {
+        console.warn('socketService: Join game timeout after 5 seconds');
+        reject(new Error('Server did not respond in time'));
+      }, 5000);
     });
-    
-    // Add a timeout in case the server doesn't respond
-    setTimeout(() => {
-      console.warn('socketService: Join game timeout after 5 seconds');
-      reject(new Error('Server did not respond in time'));
-    }, 5000);
   });
 };
 

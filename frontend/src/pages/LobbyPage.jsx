@@ -63,16 +63,16 @@ const LobbyPage = () => {
         <div className="card mb-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Game Lobby</h1>
-            <div className="flex items-center">
-              <span className="text-gray-600 mr-2">Game Code:</span>
+            <div className="flex flex-col items-end">
+              <div className="text-gray-600 mb-1 text-sm">Game Code (click to copy):</div>
               <button 
                 onClick={copyGameCode}
-                className="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg flex items-center"
+                className="bg-indigo-100 hover:bg-indigo-200 px-4 py-2 rounded-lg flex items-center border-2 border-indigo-300"
               >
-                <span className="font-mono font-medium">{gameId}</span>
+                <span className="font-mono font-bold text-lg tracking-wider">{gameId}</span>
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
-                  className="h-4 w-4 ml-2" 
+                  className="h-5 w-5 ml-2 text-indigo-600" 
                   fill="none" 
                   viewBox="0 0 24 24" 
                   stroke="currentColor"
@@ -86,7 +86,7 @@ const LobbyPage = () => {
                 </svg>
               </button>
               {copied && (
-                <span className="text-green-500 ml-2 text-sm">Copied!</span>
+                <span className="text-green-500 mt-1 text-sm font-medium">✓ Copied to clipboard!</span>
               )}
             </div>
           </div>
@@ -147,9 +147,15 @@ const LobbyPage = () => {
                     : 'Start Game'}
               </button>
               {gameState.players.length < 2 && (
-                <p className="mt-2 text-sm text-gray-600">
-                  Share the game code with others to join
-                </p>
+                <div className="mt-4 text-sm text-gray-700 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                  <p className="font-medium">Share the game code with others to join:</p>
+                  <div className="mt-2 flex justify-center">
+                    <div className="bg-white border-2 border-yellow-300 rounded-lg px-4 py-2 font-mono font-bold text-lg tracking-wider">
+                      {gameId}
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs">Make sure to copy the code exactly as shown (case-sensitive)</p>
+                </div>
               )}
             </div>
           ) : (

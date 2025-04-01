@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { setPlayer, setGameId, setGameState, setError } = useGame();
+  const { setPlayer, setGameId, setGameState, setError, error } = useGame();
   
   const [playerName, setPlayerName] = useState('');
   const [gameCode, setGameCode] = useState('');
@@ -74,14 +74,22 @@ const HomePage = () => {
       return;
     }
     
-    if (!gameCode.trim()) {
+    // Validate and clean up game code
+    const cleanGameCode = gameCode.trim().toUpperCase();
+    if (!cleanGameCode) {
       setError('Please enter a game code');
       return;
     }
     
+    // Update the displayed game code to the cleaned version
+    setGameCode(cleanGameCode);
+    
     try {
       setIsJoining(true);
-      const response = await joinGame(gameCode, playerName);
+      setError(null); // Clear any previous errors
+      
+      console.log(`Attempting to join game with code: ${cleanGameCode}`);
+      const response = await joinGame(cleanGameCode, playerName);
       
       // Save game info
       setPlayer({
@@ -95,6 +103,7 @@ const HomePage = () => {
       // Navigate to lobby
       navigate(`/lobby/${response.gameId}`);
     } catch (error) {
+      console.error('Error joining game:', error);
       setError(error.message);
     } finally {
       setIsJoining(false);
@@ -117,6 +126,15 @@ const HomePage = () => {
           </h1>
           <p className="text-gray-600 hover:scale-105 transition-transform duration-300">Guess the movie, phrase, or concept from emojis!</p>
         </div>
+        
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <span>{error}</span>
+          </div>
+        )}
         
         <div className="bg-white shadow-lg rounded-xl p-6">
           {/* Tabs */}
@@ -172,10 +190,15 @@ const HomePage = () => {
                     type="text"
                     value={gameCode}
                     onChange={(e) => setGameCode(e.target.value.toUpperCase())}
-                    className="border border-gray-300 rounded-md p-2 w-full"
+                    className="border border-gray-300 rounded-md p-2 w-full font-mono font-medium tracking-wider text-center uppercase"
                     placeholder="Enter game code"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    maxLength="6"
                     required
                   />
+                  <p className="text-xs text-gray-500 mt-1">Game codes are case-sensitive</p>
                 </div>
                 
                 <button
