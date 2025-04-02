@@ -28,7 +28,10 @@ class Game {
         "Space",
         "Sports",
         "Emotions",
-        "Business"
+        "Business",
+        "Kannada movie",
+        "Malayalam movie",
+        "Tamil movie"
       ],
       customPuzzles: settings.customPuzzles || [],
     };

@@ -32,7 +32,10 @@ const HomePage = () => {
       "Space",
       "Sports",
       "Emotions",
-      "Business"
+      "Business",
+      "Kannada movie",
+      "Malayalam movie",
+      "Tamil movie"
     ]
   });
 

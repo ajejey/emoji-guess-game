@@ -25,19 +25,19 @@ module.exports = {
     { emojis: "🤝", answer: "Shake Hand", category: "Actions" },
     { emojis: "💤 + 🦉", answer: "Sleepy Owl", category: "Actions" },
     { emojis: "🔵🖨️", answer: "Blue Print", category: "Design" },
-    { emojis: "⛰️ + 🧔", answer: "Caveman", category: "History" },
+    { emojis: "🔐 + 👨‍🏫", answer: "Keyboard", category: "Technology" },
     { emojis: "👘 +🎨 ", answer: "Asian Paints", category: "Business" },
     { emojis: "🐙 + 🎮 +² ² ²", answer: "Squid Game 2", category: "Entertainment" },
     { emojis: "👩🏻‍💻 + 𝟏𝟏:𝟏𝟏", answer: "Face Time", category: "Technology" },
-    { emojis: "🎙️ + 🅾 + 🧎🏼", answer: "Mayonnaise", category: "Food" },
-    { emojis: "📞 + ✉ ", answer: "Collector", category: "Actions" },
-    { emojis: "🏔️ + ₍^. .^₎⟆", answer: "Rocket", category: "Space" },
+    { emojis: "MI + 🔑 + 🐭", answer: "Mickey Mouse", category: "Entertainment" },
+    { emojis: "🍳 + 🧸", answer: "Panda", category: "Animals" },
+    { emojis: "❤️ + 🍹", answer: "love mocktail", category: "Kannada movie" },
     { emojis: "🥅 +⚾ +🗝️", answer: "Hockey", category: "Sports" },
     { emojis: "💔", answer: "Heart Break", category: "Emotions" },
     { emojis: "🌌 + 🚢 ", answer: "Spaceship", category: "Space" },
     { emojis: "👋+😁+👖", answer: "Elephant", category: "Animals" },
-    { emojis: "🎤 + ⛰️ + 🌐", answer: "Microsoft", category: "Technology" },
-    { emojis: "📥 +🧹💨 +🌴", answer: "Industry", category: "Business" }
+    { emojis: "❤️ +👩‍🍼", answer: "Premam", category: "Malayalam movie" },
+    { emojis: "👽", answer: "Ayalaan", category: "Tamil movie" }
   ]
 
   // SAMPLE_PUZZLES: [
