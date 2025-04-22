@@ -102,7 +102,7 @@ export const createGame = (playerName, gameSettings) => {
     ensureConnected().then(() => {
       console.log('socketService: Emitting create_game event', { playerName });
       
-      socket.emit('create_game', { playerName, gameSettings }, (response) => {
+      socket.emit('create_game', { playerName, settings: gameSettings }, (response) => {
         if (response.success) {
           resolve(response);
         } else {
