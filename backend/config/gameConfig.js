@@ -30,7 +30,7 @@ module.exports = {
     { emojis: "🐙 + 🎮 +² ² ²", answer: "Squid Game 2", category: "Entertainment" },
     { emojis: "👩🏻‍💻 + 𝟏𝟏:𝟏𝟏", answer: "Face Time", category: "Technology" },
     { emojis: "MI + 🔑 + 🐭", answer: "Mickey Mouse", category: "Entertainment" },
-    { emojis: "🍳 + 🧸", answer: "Panda", category: "Animals" },
+    { emojis: "🍳 + 👨‍👦‍👦", answer: "Panda", category: "Animals" },
     { emojis: "❤️ + 🍹", answer: "love mocktail", category: "Kannada movie" },
     { emojis: "🥅 +⚾ +🗝️", answer: "Hockey", category: "Sports" },
     { emojis: "💔", answer: "Heart Break", category: "Emotions" },
