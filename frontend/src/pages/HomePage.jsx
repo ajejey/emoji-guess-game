@@ -35,7 +35,9 @@ const HomePage = () => {
       "Business",
       "Kannada movie",
       "Malayalam movie",
-      "Tamil movie"
+      "Tamil movie",
+      "Telugu movie",
+      "Hindi movie"
     ]
   });
 

@@ -31,7 +31,9 @@ class Game {
         "Business",
         "Kannada movie",
         "Malayalam movie",
-        "Tamil movie"
+        "Tamil movie",
+        "Telugu movie",
+        "Hindi movie"
       ],
       customPuzzles: settings.customPuzzles || [],
     };

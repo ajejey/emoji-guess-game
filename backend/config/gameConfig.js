@@ -20,10 +20,10 @@ module.exports = {
   SAMPLE_PUZZLES: [
     { emojis: "🍪", answer: "Cookie", category: "Food" },
     { emojis: "🌧️ + 🎀", answer: "Rainbow", category: "Nature" },
-    { emojis: "🐉", answer: "Leviathan", category: "Culture" },
+    { emojis: "Hi + 👨‍🍼", answer: "Hi Nanna", category: "Telugu movie" },
     { emojis: "🐝+🐝+👀 ", answer: "BBC", category: "Media" },
     { emojis: "🤝", answer: "Shake Hand", category: "Actions" },
-    { emojis: "💤 + 🦉", answer: "Sleepy Owl", category: "Actions" },
+    { emojis: "🤼", answer: "Dangal", category: "Hindi Movie" },
     { emojis: "🔵🖨️", answer: "Blue Print", category: "Design" },
     { emojis: "🔐 + 👨‍🏫", answer: "Keyboard", category: "Technology" },
     { emojis: "👘 +🎨 ", answer: "Asian Paints", category: "Business" },
