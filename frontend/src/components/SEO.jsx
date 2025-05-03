@@ -10,7 +10,7 @@ const SEO = ({
   children
 }) => {
   // Build the full canonical URL
-  const siteUrl = import.meta.env.VITE_SITE_URL || 'https://emoji-guess-game.com';
+  const siteUrl = import.meta.env.VITE_FRONTEND_URL || 'https://emoji-guess-game-seven.vercel.app';
   const fullCanonicalUrl = canonicalUrl ? `${siteUrl}${canonicalUrl}` : siteUrl;
   
   return (
@@ -39,6 +39,7 @@ const SEO = ({
       <meta name="googlebot" content="index, follow" />
       <meta name="author" content="Ajey Nagarkatti" />
       <meta name="language" content="English" />
+      <meta name="google-adsense-account" content="ca-pub-3613850686549619" />
       
       {/* Structured Data / Schema.org markup for Game */}
       <script type="application/ld+json">

@@ -1,49 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://emoji-guess-game.com/</loc>
+    <loc>https://emoji-guess-game-seven.vercel.app/</loc>
     <lastmod>2025-05-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://emoji-guess-game.com/lobby</loc>
+    <loc>https://emoji-guess-game-seven.vercel.app/lobby</loc>
     <lastmod>2025-05-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://emoji-guess-game.com/game</loc>
+    <loc>https://emoji-guess-game-seven.vercel.app/game</loc>
     <lastmod>2025-05-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://emoji-guess-game.com/about-us</loc>
+    <loc>https://emoji-guess-game-seven.vercel.app/about-us</loc>
     <lastmod>2025-05-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://emoji-guess-game.com/contact</loc>
+    <loc>https://emoji-guess-game-seven.vercel.app/contact</loc>
     <lastmod>2025-05-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://emoji-guess-game.com/faq</loc>
+    <loc>https://emoji-guess-game-seven.vercel.app/faq</loc>
     <lastmod>2025-05-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://emoji-guess-game.com/privacy-policy</loc>
+    <loc>https://emoji-guess-game-seven.vercel.app/privacy-policy</loc>
     <lastmod>2025-05-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://emoji-guess-game.com/terms-of-service</loc>
+    <loc>https://emoji-guess-game-seven.vercel.app/terms-of-service</loc>
     <lastmod>2025-05-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>

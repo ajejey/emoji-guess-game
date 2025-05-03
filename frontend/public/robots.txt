@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # Allow all crawlers
-Sitemap: https://emoji-guess-game.com/sitemap.xml
+Sitemap: https://emoji-guess-game-seven.vercel.app/sitemap.xml
