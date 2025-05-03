@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGame } from '../contexts/GameContext';
 import { startGame } from '../services/socketService';
+import SEO from '../components/SEO';
 
 const LobbyPage = () => {
   const { gameId } = useParams();
@@ -58,7 +59,13 @@ const LobbyPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-gray-100 p-4">
+      <SEO 
+        title={`Game Lobby | Guess the Emoji: Multiplayer Party Game`}
+        description="Join the lobby and invite friends to play Guess the Emoji together! A fun multiplayer party game for friends, family, and team building."
+        keywords="emoji game lobby, guess the emoji multiplayer, emoji quiz party, online game room, virtual party game"
+        canonicalUrl={`/lobby/${gameId}`}
+      />
       <div className="max-w-4xl mx-auto">
         <div className="card mb-6">
           <div className="flex justify-between items-center mb-6">

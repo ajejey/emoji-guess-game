@@ -6,6 +6,7 @@ import EmojiDisplay from '../components/EmojiDisplay';
 import PlayerList from '../components/PlayerList';
 import ChatBox from '../components/ChatBox';
 import Confetti from 'react-confetti';
+import SEO from '../components/SEO';
 
 const GamePage = () => {
   const { gameId } = useParams();
@@ -447,8 +448,14 @@ const GamePage = () => {
 
   // Active game screen
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-100 p-4">
+      <SEO 
+        title={`Play Guess the Emoji | Multiplayer Party Game`}
+        description="Play the Guess the Emoji multiplayer game! Solve emoji puzzles with friends and family in real-time. Fun for parties, team building, and virtual gatherings."
+        keywords="guess the emoji game, emoji quiz gameplay, emoji puzzle multiplayer, online emoji game, party game online"
+        canonicalUrl={`/game/${gameId}`}
+      />
+      <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main game area */}
           <div className="lg:col-span-2">

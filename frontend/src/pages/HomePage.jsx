@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { createGame, joinGame } from '../services/socketService';
+import { fetchCategories } from '../services/apiService';
 import { useGame } from '../contexts/GameContext';
 import { motion } from 'framer-motion';
+import SEO from '../components/SEO';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -14,6 +16,10 @@ const HomePage = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState('join'); // 'join' or 'create'
   
+  // Available categories for selection
+  const [availableCategories, setAvailableCategories] = useState([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+
   // Game settings for creating a new game
   const [gameSettings, setGameSettings] = useState({
     roundTime: 60,
@@ -22,24 +28,39 @@ const HomePage = () => {
       'Food',
       'Media',
       'Nature',
-      "Actions",
-      "Design",
-      "Animals",
-      "History",
-      "Culture",
-      "Entertainment",
-      "Technology",
-      "Space",
-      "Sports",
-      "Emotions",
-      "Business",
-      "Kannada movie",
-      "Malayalam movie",
-      "Tamil movie",
-      "Telugu movie",
-      "Hindi movie"
+      'Actions',
+      'Entertainment',
+      'Technology',
+      'Sports'
     ]
   });
+  
+  // Fetch categories from backend when component mounts
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        setIsLoadingCategories(true);
+        const categories = await fetchCategories();
+        setAvailableCategories(categories);
+        
+        // Update game settings with default selected categories (first 5-7 categories)
+        if (categories.length > 0) {
+          const defaultSelectedCategories = categories.slice(0, Math.min(7, categories.length));
+          setGameSettings(prev => ({
+            ...prev,
+            categories: defaultSelectedCategories
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+        setError('Failed to load categories. Using default categories instead.');
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+    
+    loadCategories();
+  }, []);
 
   const handleCreateGame = async (e) => {
     e.preventDefault();
@@ -121,13 +142,32 @@ const HomePage = () => {
       [setting]: value
     }));
   };
+  
+  const handleCategoryToggle = (category) => {
+    setGameSettings(prev => {
+      const updatedCategories = prev.categories.includes(category)
+        ? prev.categories.filter(cat => cat !== category) // Remove if already selected
+        : [...prev.categories, category]; // Add if not already selected
+        
+      return {
+        ...prev,
+        categories: updatedCategories
+      };
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
       <div className="max-w-md w-full">
+        <SEO 
+          title="Guess the Emoji: Multiplayer Party Game | Play Online Free"
+          description="Play the best free online emoji guessing game with friends! Guess movies, phrases, brands, and more from emoji combinations. Perfect for parties, team building, and family gatherings."
+          keywords="guess the emoji, emoji quiz, emoji puzzle game, emoji riddles, multiplayer game, party game, team building, online game, free emoji game"
+          canonicalUrl="/"
+        />
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-indigo-600 mb-2 animate-pulse hover:animate-none transition-all duration-500">
-            Emoji Puzzle Game
+            Guess the Emoji: Multiplayer Party Game
           </h1>
           <p className="text-gray-600 hover:scale-105 transition-transform duration-300">Guess the movie, phrase, or concept from emojis!</p>
         </div>
@@ -273,10 +313,44 @@ const HomePage = () => {
                   </select>
                 </div>
                 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Categories ({gameSettings.categories.length} selected)
+                  </label>
+                  <div className="max-h-48 overflow-y-auto border border-gray-300 rounded-md p-2">
+                    {isLoadingCategories ? (
+                      <div className="flex justify-center items-center h-24">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+                        <span className="ml-2 text-sm text-gray-600">Loading categories...</span>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2">
+                        {availableCategories.map(category => (
+                          <div key={category} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id={`category-${category}`}
+                              checked={gameSettings.categories.includes(category)}
+                              onChange={() => handleCategoryToggle(category)}
+                              className="h-4 w-4 text-indigo-600 rounded"
+                            />
+                            <label htmlFor={`category-${category}`} className="ml-2 text-sm text-gray-700 truncate">
+                              {category}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {!isLoadingCategories && gameSettings.categories.length === 0 && (
+                    <p className="text-red-500 text-xs mt-1">Please select at least one category</p>
+                  )}
+                </div>
+                
                 <button
                   type="submit"
                   className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 hover:scale-105 w-full transition-all duration-300"
-                  disabled={isCreating}
+                  disabled={isCreating || gameSettings.categories.length === 0}
                 >
                   {isCreating ? 'Creating...' : 'Create Game'}
                 </button>
@@ -297,18 +371,17 @@ const HomePage = () => {
           </ul>
           <p className="mt-4 text-xs text-gray-500">
             Play the best free online emoji guessing game! Perfect for family game night, virtual team building, and party games. No account needed!
-            #EmojiPuzzle #OnlineGames #BrainTeasers #FamilyGames #TeamBuilding #PartyGames
+            #GuessTheEmoji #EmojiQuiz #EmojiPuzzle #OnlineGames #BrainTeasers #FamilyGames #TeamBuilding #PartyGames
           </p>
           <footer className="mt-12 pt-4 border-t border-gray-200">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <p className="text-xs text-gray-400 mb-2 md:mb-0">
-                © {new Date().getFullYear()} Emoji Puzzle Game | Created by <a href="https://www.linkedin.com/in/ajey-nagarkatti-28273856/" className="text-indigo-500 hover:underline" target="_blank" rel="noopener noreferrer">Ajey Nagarkatti</a>
+                © {new Date().getFullYear()} Guess the Emoji: Multiplayer Party Game | Created by <a href="https://www.linkedin.com/in/ajey-nagarkatti-28273856/" className="text-indigo-500 hover:underline" target="_blank" rel="noopener noreferrer">Ajey Nagarkatti</a>
               </p>
-              {/* <div className="flex space-x-4">
-                <a href="/privacy" className="text-xs text-gray-400 hover:text-indigo-500">Privacy Policy</a>
-                <a href="/terms" className="text-xs text-gray-400 hover:text-indigo-500">Terms of Use</a>
-                <a href="/contact" className="text-xs text-gray-400 hover:text-indigo-500">Contact</a>
-              </div> */}
+              <div className="flex flex-wrap space-x-4">
+                <Link to="/privacy-policy" className="text-xs text-gray-400 hover:text-indigo-500">Privacy Policy</Link>
+                <Link to="/terms-of-service" className="text-xs text-gray-400 hover:text-indigo-500">Terms of Service</Link>
+              </div>
             </div>
           </footer>
         </div>
