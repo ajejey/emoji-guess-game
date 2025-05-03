@@ -54,21 +54,41 @@ class Game {
   }
 
   _initializeRounds() {
-    // Use custom puzzles if provided, otherwise use samples
-    const puzzlePool = this.settings.customPuzzles.length > 0 
-      ? this.settings.customPuzzles 
-      : gameConfig.SAMPLE_PUZZLES.filter(puzzle => 
+    // Use custom puzzles if provided, otherwise use the puzzle library
+    let puzzlePool;
+    
+    if (this.settings.customPuzzles.length > 0) {
+      // Use custom puzzles if provided
+      puzzlePool = this.settings.customPuzzles;
+      console.log("Using custom puzzles:", puzzlePool.length);
+    } else {
+      // Use the main puzzle library and filter by selected categories
+      puzzlePool = gameConfig.PUZZLE_LIBRARY.filter(puzzle => 
+        this.settings.categories.includes(puzzle.category)
+      );
+      
+      // If no puzzles match the selected categories, fall back to sample puzzles
+      if (puzzlePool.length < this.settings.roundsPerGame) {
+        console.log("Warning: Not enough puzzles in selected categories, using sample puzzles");
+        puzzlePool = gameConfig.SAMPLE_PUZZLES.filter(puzzle => 
           this.settings.categories.includes(puzzle.category)
         );
-    
-    console.log("Puzzle Pool:", puzzlePool);
-    console.log("Selected Puzzles:", puzzlePool);
+      }
+      
+      console.log("Using puzzles from library, filtered by categories:", this.settings.categories);
+      console.log(`Found ${puzzlePool.length} puzzles matching selected categories`);
+    }
     
     // Shuffle and select puzzles for the game
     const shuffled = [...puzzlePool].sort(() => 0.5 - Math.random());
     const selectedPuzzles = shuffled.slice(0, this.settings.roundsPerGame);
     
-    console.log("Selected Puzzles:", selectedPuzzles);
+    // If we still don't have enough puzzles, log a warning
+    if (selectedPuzzles.length < this.settings.roundsPerGame) {
+      console.log(`Warning: Only ${selectedPuzzles.length} puzzles available for ${this.settings.roundsPerGame} rounds`);
+    }
+    
+    console.log(`Selected ${selectedPuzzles.length} puzzles for the game`);
 
     this.rounds = selectedPuzzles.map((puzzle, index) => ({
       roundNumber: index + 1,

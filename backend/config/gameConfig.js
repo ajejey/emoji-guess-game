@@ -16,7 +16,224 @@ module.exports = {
   ROOM_CODE_LENGTH: 6,
   ROOM_IDLE_TIMEOUT: 3600000, // 1 hour in milliseconds
   
-  // Sample emoji puzzles (for testing)
+  // Categories available for selection
+  CATEGORIES: [
+    'Food',
+    'Media',
+    'Nature',
+    'Actions',
+    'Design',
+    'Animals',
+    'History',
+    'Culture',
+    'Entertainment',
+    'Technology',
+    'Space',
+    'Sports',
+    'Emotions',
+    'Business',
+    'Kannada movie',
+    'Malayalam movie',
+    'Tamil movie',
+    'Telugu movie',
+    'Hindi movie',
+    'Hollywood movie',
+    'TV Shows',
+    'Music',
+    'Books',
+    'Brands',
+    'Places',
+    'Phrases'
+  ],
+  
+  // Complete puzzle library for production use
+  PUZZLE_LIBRARY: [
+    { emojis: "🍪", answer: "Cookie", category: "Food" },
+    { emojis: "🌧️ + 🎀", answer: "Rainbow", category: "Nature" },
+    { emojis: "Hi + 👨‍🍼", answer: "Hi Nanna", category: "Telugu movie" },
+    { emojis: "🐝+🐝+👀 ", answer: "BBC", category: "Media" },
+    { emojis: "🤝", answer: "Shake Hand", category: "Actions" },
+    { emojis: "🤼", answer: "Dangal", category: "Hindi Movie" },
+    { emojis: "🔵🖨️", answer: "Blue Print", category: "Design" },
+    { emojis: "🔐 + 👨‍🏫", answer: "Keyboard", category: "Technology" },
+    { emojis: "👘 +🎨 ", answer: "Asian Paints", category: "Business" },
+    { emojis: "🐙 + 🎮 +² ² ²", answer: "Squid Game 2", category: "Entertainment" },
+    { emojis: "👩🏻‍💻 + 𝟏𝟏:𝟏𝟏", answer: "Face Time", category: "Technology" },
+    { emojis: "MI + 🔑 + 🐭", answer: "Mickey Mouse", category: "Entertainment" },
+    { emojis: "🍳 + 👨‍👦‍👦", answer: "Panda", category: "Animals" },
+    { emojis: "❤️ + 🍹", answer: "love mocktail", category: "Kannada movie" },
+    { emojis: "🥅 +⚾ +🗝️", answer: "Hockey", category: "Sports" },
+    { emojis: "💔", answer: "Heart Break", category: "Emotions" },
+    { emojis: "🌌 + 🚢 ", answer: "Spaceship", category: "Space" },
+    { emojis: "👋+😁+👖", answer: "Elephant", category: "Animals" },
+    { emojis: "❤️ +👩‍🍼", answer: "Premam", category: "Malayalam movie" },
+    { emojis: "👽", answer: "Ayalaan", category: "Tamil movie" },
+
+      // Indian Movies
+  { emojis: "3️⃣ + 🥜", answer: "3 Idiots", category: "Hindi movie" },
+  { emojis: "👨‍👩‍👧‍👦 + 👨‍👩‍👧‍👦", answer: "Hum Saath Saath Hain", category: "Hindi movie" },
+  { emojis: "🏏 + 👨‍👦 + 🏆", answer: "Jersey", category: "Telugu movie" },
+  { emojis: "🧠 + 👁️", answer: "Vikram", category: "Tamil movie" },
+  { emojis: "🔫 + 🌹", answer: "Pushpa", category: "Telugu movie" },
+  { emojis: "👑 + 👑 + 👑", answer: "K.G.F", category: "Kannada movie" },
+  { emojis: "2️⃣ + 👦 + 👨", answer: "Drishyam 2", category: "Malayalam movie" },
+  { emojis: "🎂 + 📞", answer: "Cake Mixing", category: "Malayalam movie" },
+  { emojis: "🐅 + 🔴", answer: "Red", category: "Telugu movie" },
+  { emojis: "💍 + 👰‍♀️ + 💔", answer: "Tanu Weds Manu", category: "Hindi movie" },
+  { emojis: "👁️ + 👨‍⚕️", answer: "Doctor", category: "Tamil movie" },
+  { emojis: "👨‍✈️ + ⭐", answer: "Soorarai Pottru", category: "Tamil movie" },
+  { emojis: "🧠 + 🧟", answer: "Bramhastra", category: "Hindi movie" },
+  { emojis: "🏃‍♂️ + 🔙 + 👨‍👩‍👧", answer: "Run Baby Run", category: "Malayalam movie" },
+  { emojis: "👸 + 🐘", answer: "Kantara", category: "Kannada movie" },
+  
+    // Hollywood Movie
+    { emojis: "👨‍🚀 + ⭐ + ⚔️", answer: "Star Wars", category: "Hollywood movie" },
+    { emojis: "🧙‍♂️ + 💍 + 🌋", answer: "Lord of the Rings", category: "Hollywood movie" },
+    { emojis: "🏆 + 🧠 + 💭", answer: "Inception", category: "Hollywood movie" },
+    { emojis: "🦖 + 🏝️ + 🧬", answer: "Jurassic Park", category: "Hollywood movie" },
+    { emojis: "🚢 + 💔 + 🧊", answer: "Titanic", category: "Hollywood movie" },
+    { emojis: "👨 + 🦇 + 🃏", answer: "The Dark Knight", category: "Hollywood movie" },
+    { emojis: "🤖 + 🕒 + 🔙", answer: "Terminator", category: "Hollywood movie" },
+    { emojis: "👽 + 👆 + 🏠", answer: "E.T.", category: "Hollywood movie" },
+    { emojis: "🎭 + 🎪 + 👑", answer: "The Greatest Showman", category: "Hollywood movie" },
+    { emojis: "☂️ + 🎵 + 🕺", answer: "Singin' in the Rain", category: "Hollywood movie" },
+    { emojis: "🧩 + 🎮 + 🌐", answer: "Ready Player One", category: "Hollywood movie" },
+    { emojis: "👰‍♀️ + 👻 + 💀", answer: "Corpse Bride", category: "Hollywood movie" },
+    { emojis: "🏃‍♂️ + 🍫 + 🪶", answer: "Forrest Gump", category: "Hollywood movie" },
+    { emojis: "🧠 + 🔄 + 😭", answer: "Inside Out", category: "Hollywood movie" },
+    { emojis: "👨‍👩‍👧 + 🌊 + 👽", answer: "Interstellar", category: "Hollywood movie" },
+    { emojis: "🧙‍♀️ + 🧹 + 🏰", answer: "Harry Potter", category: "Hollywood movie" },
+    { emojis: "🔴 + 💊 + 🐇", answer: "The Matrix", category: "Hollywood movie" },
+    { emojis: "🦁 + 👑 + 🌍", answer: "The Lion King", category: "Hollywood movie" },
+    { emojis: "🤡 + 🎈 + 🚲", answer: "IT", category: "Hollywood movie" },
+    { emojis: "🎮 + 🏆 + 🎭", answer: "The Hunger Games", category: "Hollywood movie" },
+    { emojis: "💎 + 💍 + 👑", answer: "The Lord of the Rings", category: "Hollywood movie" },
+    { emojis: "🧟‍♂️ + 🧠 + 💘", answer: "Warm Bodies", category: "Hollywood movie" },
+    { emojis: "👨‍🚀 + 🔴 + 🥔", answer: "The Martian", category: "Hollywood movie" },
+    { emojis: "🧑‍🔬 + ⚡ + 🧪", answer: "Back to the Future", category: "Hollywood movie" },
+    { emojis: "🕷️ + 🕸️ + 🌆", answer: "Spider-Man: Across the Spider-Verse", category: "Hollywood movie" },
+    { emojis: "👸 + ❄️ + ⛄", answer: "Frozen", category: "Hollywood movie" },
+    { emojis: "🏊‍♀️ + 🦈 + 🌊", answer: "Jaws", category: "Hollywood movie" },
+    { emojis: "🔨 + ⚡ + 🌈", answer: "Thor: Ragnarok", category: "Hollywood movie" },
+    
+    // TV Shows
+    { emojis: "👑 + 🐉 + ⚔️", answer: "Game of Thrones", category: "TV Shows" },
+    { emojis: "🧪 + 💊 + 👨‍🔬", answer: "Breaking Bad", category: "TV Shows" },
+    { emojis: "👽 + 🕵️ + 👓", answer: "The X-Files", category: "TV Shows" },
+    { emojis: "🧟‍♂️ + 🏃‍♀️ + 🔫", answer: "The Walking Dead", category: "TV Shows" },
+    { emojis: "👨‍⚕️ + 🏠 + 🔍", answer: "House M.D.", category: "TV Shows" },
+    { emojis: "👑 + 👸 + 🇬🇧", answer: "The Crown", category: "TV Shows" },
+    { emojis: "🧠 + 🔍 + 🧩", answer: "Sherlock", category: "TV Shows" },
+    { emojis: "👨‍👩‍👧‍👦 + 🛋️ + ☕", answer: "Friends", category: "TV Shows" },
+    { emojis: "🦑 + 🎮 + 💰", answer: "Squid Game", category: "TV Shows" },
+    { emojis: "🧙‍♂️ + ⚔️ + 🪙", answer: "The Witcher", category: "TV Shows" },
+    { emojis: "🏫 + 🧠 + 👾", answer: "Stranger Things", category: "TV Shows" },
+    { emojis: "🔎 + 💵 + 🏦", answer: "Money Heist", category: "TV Shows" },
+    { emojis: "👩‍⚕️ + 👨‍⚕️ + 💘", answer: "Grey's Anatomy", category: "TV Shows" },
+    { emojis: "👑 + 👨‍👩‍👧‍👦 + 🎲", answer: "Succession", category: "TV Shows" },
+    { emojis: "🦸‍♀️ + 📸 + 💪", answer: "Jessica Jones", category: "TV Shows" },
+    { emojis: "🧛‍♂️ + 🔪 + 👮‍♂️", answer: "True Blood", category: "TV Shows" },
+    { emojis: "🤣 + 🧠 + 🔬", answer: "The Big Bang Theory", category: "TV Shows" },
+    { emojis: "📝 + 🏢 + 🤣", answer: "The Office", category: "TV Shows" },
+    { emojis: "🦇 + 🧛‍♀️ + 🔪", answer: "Buffy the Vampire Slayer", category: "TV Shows" },
+    { emojis: "👩‍⚖️ + 👨‍⚖️ + 🔎", answer: "How to Get Away with Murder", category: "TV Shows" },
+    { emojis: "🏝️ + ✈️ + ⏱️", answer: "Lost", category: "TV Shows" },
+    { emojis: "🐎 + 👑 + 🏰", answer: "Bridgerton", category: "TV Shows" },
+    { emojis: "💊 + 👩‍🦰 + 🟠", answer: "Orange is the New Black", category: "TV Shows" },
+    { emojis: "🎭 + 👨‍👩‍👧‍👦 + 🏠", answer: "This Is Us", category: "TV Shows" },
+    { emojis: "🦸‍♂️ + ⚡ + 🏃‍♂️", answer: "The Flash", category: "TV Shows" },
+    { emojis: "🤖 + 🌐 + 🧠", answer: "Westworld", category: "TV Shows" },
+    
+    // Music
+    { emojis: "👸 + 🎵 + 👑", answer: "Queen", category: "Music" },
+    { emojis: "🔄 + 🌊 + 🎸", answer: "Rolling Stone", category: "Music" },
+    { emojis: "🤖 + 🎧 + 🎛️", answer: "Daft Punk", category: "Music" },
+    { emojis: "🔫 + 🌹", answer: "Guns N' Roses", category: "Music" },
+    { emojis: "❄️ + ⛓️", answer: "Coldplay", category: "Music" },
+    { emojis: "🐜 + 🧠 + 💪", answer: "Anthrax", category: "Music" },
+    { emojis: "🎯 + 👨‍🎤 + 🌧️", answer: "AC/DC", category: "Music" },
+    { emojis: "👁️ + 🐅", answer: "Eye of the Tiger", category: "Music" },
+    { emojis: "🧠 + 👻 + 💀", answer: "Imagine Dragons", category: "Music" },
+    { emojis: "💨 + 👦", answer: "Billie Eilish", category: "Music" },
+    { emojis: "🔴 + 🔥 + 🌶️", answer: "Red Hot Chili Peppers", category: "Music" },
+    { emojis: "👨‍👨‍👦‍👦 + 👨‍👨‍👦‍👦", answer: "One Direction", category: "Music" },
+    { emojis: "👧 + 🎵 + 🔥", answer: "Alicia Keys", category: "Music" },
+    { emojis: "🐠 + 🎣 + 🌊", answer: "Phish", category: "Music" },
+    { emojis: "🖤 + 🪐 + 👁️", answer: "Black Eyed Peas", category: "Music" },
+    { emojis: "👨‍🦱 + 🐻 + 👨‍🎤", answer: "Bruno Mars", category: "Music" },
+    { emojis: "🎭 + 👰‍♀️ + 💔", answer: "Panic! At The Disco", category: "Music" },
+    { emojis: "🌞 + 📅 + 🌄", answer: "Twenty One Pilots", category: "Music" },
+    { emojis: "🎪 + 🐘 + 🎵", answer: "Cage The Elephant", category: "Music" },
+    { emojis: "👸 + 🐝", answer: "Queen Bee (Beyoncé)", category: "Music" },
+    { emojis: "🏠 + 🧲", answer: "Arctic Monkeys", category: "Music" },
+    { emojis: "🌿 + 🌲 + 🎸", answer: "Green Day", category: "Music" },
+    { emojis: "🍋 + 😁", answer: "Lemonade", category: "Music" },
+    { emojis: "⬛ + 🎵 + 👧", answer: "Blackpink", category: "Music" },
+    { emojis: "🎭 + 5️⃣", answer: "Maroon 5", category: "Music" },
+    { emojis: "👨‍🎤 + 🌙", answer: "The Weeknd", category: "Music" },
+    { emojis: "🔮 + 🎲 + 🐘", answer: "Tame Impala", category: "Music" },
+    
+    // Books
+    { emojis: "🔍 + 👴 + 🌊", answer: "The Old Man and the Sea", category: "Books" },
+    { emojis: "🐖 + 👨‍🌾 + 🏛️", answer: "Animal Farm", category: "Books" },
+    { emojis: "🦅 + 🔪", answer: "To Kill a Mockingbird", category: "Books" },
+    { emojis: "🏝️ + 👑 + 🐷", answer: "Lord of the Flies", category: "Books" },
+    { emojis: "🧠 + 🔥 + 📚", answer: "Fahrenheit 451", category: "Books" },
+    { emojis: "🌊 + 🐋 + ⚓", answer: "Moby Dick", category: "Books" },
+    { emojis: "💯 + 👴 + 🌊", answer: "One Hundred Years of Solitude", category: "Books" },
+    { emojis: "1️⃣9️⃣8️⃣4️⃣ + 👁️", answer: "1984", category: "Books" },
+    { emojis: "🧙‍♂️ + 💍 + 🌋", answer: "The Lord of the Rings", category: "Books" },
+    { emojis: "🧙‍♀️ + 📖 + 🔮", answer: "Harry Potter", category: "Books" },
+    { emojis: "⚰️ + 🧛‍♂️ + 🩸", answer: "Dracula", category: "Books" },
+    { emojis: "💭 + 🧠 + 🧩", answer: "The Thinker", category: "Books" },
+    { emojis: "✨ + ⚔️ + 🌌", answer: "The Hunger Games", category: "Books" },
+    { emojis: "🧑‍💻 + 🎮 + 🎯", answer: "Ready Player One", category: "Books" },
+    { emojis: "⬅️ + 👨‍💼 + 👩‍💼", answer: "Gone Girl", category: "Books" },
+    { emojis: "🌃 + 🦋 + 📊", answer: "The Fault in Our Stars", category: "Books" },
+    { emojis: "🐯 + 🛶 + 🌊", answer: "Life of Pi", category: "Books" },
+    { emojis: "🤢 + 🧠 + 🧟", answer: "World War Z", category: "Books" },
+    { emojis: "🧣 + 🎭 + 👗", answer: "The Handmaid's Tale", category: "Books" },
+    { emojis: "🕰️ + 👨‍🔬 + 🦖", answer: "Jurassic Park", category: "Books" },
+    { emojis: "👧 + 🐉 + 💉", answer: "Girl with the Dragon Tattoo", category: "Books" },
+    { emojis: "📝 + 🏞️ + 🎒", answer: "Wild", category: "Books" },
+    { emojis: "🥛 + 🍯 + 🍷", answer: "Milk and Honey", category: "Books" },
+    { emojis: "🧹 + 🎃 + 🏮", answer: "The Night Circus", category: "Books" },
+    { emojis: "🧰 + 🩺 + 🧬", answer: "The Immortal Life of Henrietta Lacks", category: "Books" },
+    { emojis: "🌄 + 👁️ + 👂", answer: "All the Light We Cannot See", category: "Books" },
+    { emojis: "☀️ + 🌗 + 👑", answer: "A Song of Ice and Fire", category: "Books" },
+  
+  // Brands
+  { emojis: "🍎 + 💻 + 📱", answer: "Apple", category: "Brands" },
+  { emojis: "👟 + ✔️", answer: "Nike", category: "Brands" },
+  { emojis: "🚗 + ⚡ + 🚀", answer: "Tesla", category: "Brands" },
+  { emojis: "☕ + 💚 + 🧜‍♀️", answer: "Starbucks", category: "Brands" },
+  { emojis: "🔴 + ⚪ + 👖", answer: "Levi's", category: "Brands" },
+  { emojis: "🐊 + 👕", answer: "Lacoste", category: "Brands" },
+  { emojis: "3️⃣ + 🦓", answer: "Adidas", category: "Brands" },
+  { emojis: "🏎️ + 🐎", answer: "Ferrari", category: "Brands" },
+  
+  // Places
+  { emojis: "🗽 + 🍎 + 🏙️", answer: "New York", category: "Places" },
+  { emojis: "🗼 + 🥖 + 💋", answer: "Paris", category: "Places" },
+  { emojis: "🏺 + 🏛️ + 🧿", answer: "Athens", category: "Places" },
+  { emojis: "🌉 + 🌁 + 🚊", answer: "San Francisco", category: "Places" },
+  { emojis: "🎭 + ☕ + ⛪", answer: "Vienna", category: "Places" },
+  { emojis: "🌋 + 🍣 + 🏯", answer: "Tokyo", category: "Places" },
+  { emojis: "🏝️ + 🥥 + 🌊", answer: "Maldives", category: "Places" },
+  { emojis: "🍺 + ⚽ + 🥨", answer: "Munich", category: "Places" },
+  
+  // Phrases
+  { emojis: "🧵 + 🪡 + ⏱️", answer: "Stitch in Time", category: "Phrases" },
+  { emojis: "🐦 + ✋ + 🌳", answer: "Bird in Hand", category: "Phrases" },
+  { emojis: "🥚 + 🧺 + 1️⃣", answer: "All Eggs in One Basket", category: "Phrases" },
+  { emojis: "🐈 + 😛 + 😶", answer: "Cat Got Your Tongue", category: "Phrases" },
+  { emojis: "☔ + 🐱 + 🐶", answer: "Raining Cats and Dogs", category: "Phrases" },
+  { emojis: "🎂 + 🍰 + 🍴", answer: "Piece of Cake", category: "Phrases" },
+  { emojis: "💰 + 👄", answer: "Money Talks", category: "Phrases" },
+  { emojis: "🏠 + 💖", answer: "Home is Where the Heart is", category: "Phrases" }
+  ],
+
+  // For testing - a subset of the main library
   SAMPLE_PUZZLES: [
     { emojis: "🍪", answer: "Cookie", category: "Food" },
     { emojis: "🌧️ + 🎀", answer: "Rainbow", category: "Nature" },
@@ -39,67 +256,4 @@ module.exports = {
     { emojis: "❤️ +👩‍🍼", answer: "Premam", category: "Malayalam movie" },
     { emojis: "👽", answer: "Ayalaan", category: "Tamil movie" }
   ]
-
-  // SAMPLE_PUZZLES: [
-  //   { 
-  //     emojis: "🦇 👨", 
-  //     answer: "Batman",
-  //     category: "Movies"
-  //   },
-  //   { 
-  //     emojis: "🧙‍♂️ 💍", 
-  //     answer: "Lord of the Rings",
-  //     category: "Movies"
-  //   },
-  //   { 
-  //     emojis: "👸 ❄️", 
-  //     answer: "Frozen",
-  //     category: "Movies"
-  //   },
-  //   { 
-  //     emojis: "😈 👠", 
-  //     answer: "The Devil Wears Prada",
-  //     category: "Movies"
-  //   },
-  //   { 
-  //     emojis: "🕷️ 👨", 
-  //     answer: "Spider Man",
-  //     category: "Movies"
-  //   },
-  //   { 
-  //     emojis: "🦖 🏝️", 
-  //     answer: "Jurassic Park",
-  //     category: "Movies"
-  //   },
-  //   { 
-  //     emojis: "🚢 💔", 
-  //     answer: "Titanic",
-  //     category: "Movies"
-  //   },
-  //   { 
-  //     emojis: "👻 👨‍👩‍👧", 
-  //     answer: "Ghostbusters",
-  //     category: "Movies"
-  //   },
-  //   { 
-  //     emojis: "🤖 👮", 
-  //     answer: "Robocop",
-  //     category: "Movies"
-  //   },
-  //   { 
-  //     emojis: "🧠 🍽️", 
-  //     answer: "Food for Thought",
-  //     category: "Phrases"
-  //   },
-  //   { 
-  //     emojis: "🔥 🧊", 
-  //     answer: "Fire and Ice",
-  //     category: "Phrases"
-  //   },
-  //   { 
-  //     emojis: "🌧️ ☀️", 
-  //     answer: "Rainbow",
-  //     category: "Nature"
-  //   }
-  // ]
 };

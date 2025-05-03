@@ -10,9 +10,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Import game config to access categories
+const gameConfig = require('./config/gameConfig');
+
 // API routes
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is running' });
+});
+
+// Categories endpoint
+app.get('/api/categories', (req, res) => {
+  res.status(200).json({ categories: gameConfig.CATEGORIES });
 });
 
 // Create HTTP server
