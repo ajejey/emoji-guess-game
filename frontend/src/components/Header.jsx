@@ -45,6 +45,9 @@ const Header = () => {
               <Link to="/faq" className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/faq')}`}>
                 FAQ
               </Link>
+              <Link to="/blog" className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/blog')}`}>
+                Blog
+              </Link>
             </div>
           </div>
           
@@ -101,6 +104,13 @@ const Header = () => {
               onClick={closeMenu}
             >
               FAQ
+            </Link>
+            <Link 
+              to="/blog" 
+              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/blog') ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'}`}
+              onClick={closeMenu}
+            >
+              Blog
             </Link>
           </div>
         </div>
