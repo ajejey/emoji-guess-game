@@ -13,14 +13,14 @@ const BlogPage = () => {
   ];
 
   return (
-    <div>
+    <>
       <SEO
         title="Our Blog"
         description="Read the latest articles and updates on emoji games, online gaming, and team fun activities."
       />
-      <div className="container mx-auto py-8 px-6">
-        <h1 className="text-3xl font-bold mb-8 text-center">Our Blog</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="container mx-auto py-12 px-6 bg-gray-50 min-h-screen">
+        <h1 className="text-4xl font-bold text-gray-900 mb-12 text-center">Our Blog</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {posts.map(post => (
           <BlogPostCard
             key={post.id}
@@ -30,7 +30,6 @@ const BlogPage = () => {
           />
         ))}
       </div>
-    </div>
     </div>
   );
 };

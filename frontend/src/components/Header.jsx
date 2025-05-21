@@ -14,7 +14,7 @@ const Header = () => {
   };
 
   const isActive = (path) => {
-    return location.pathname === path ? 'text-indigo-600' : 'text-gray-700 hover:text-indigo-600';
+    return location.pathname === path ? 'text-indigo-600' : 'text-gray-700 hover:text-teal-600';
   };
 
   return (
@@ -79,35 +79,35 @@ const Header = () => {
           <div className="pt-2 pb-3 space-y-1">
             <Link 
               to="/" 
-              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/') ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'}`}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/') ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50 hover:text-teal-600'}`}
               onClick={closeMenu}
             >
               Home
             </Link>
             <Link 
               to="/about-us" 
-              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/about-us') ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'}`}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/about-us') ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50 hover:text-teal-600'}`}
               onClick={closeMenu}
             >
               About
             </Link>
             <Link 
               to="/contact" 
-              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/contact') ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'}`}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/contact') ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50 hover:text-teal-600'}`}
               onClick={closeMenu}
             >
               Contact
             </Link>
             <Link 
               to="/faq" 
-              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/faq') ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'}`}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/faq') ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50 hover:text-teal-600'}`}
               onClick={closeMenu}
             >
               FAQ
             </Link>
             <Link 
               to="/blog" 
-              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/blog') ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'}`}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/blog') ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700 hover:bg-gray-50 hover:text-teal-600'}`}
               onClick={closeMenu}
             >
               Blog
