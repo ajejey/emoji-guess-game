@@ -13,7 +13,7 @@ const BlogPage = () => {
   ];
 
   return (
-<>
+    <>
       <SEO
         title="Our Blog"
         description="Read the latest articles and updates on emoji games, online gaming, and team fun activities."
