@@ -10,6 +10,8 @@ import TermsOfServicePage from './pages/TermsOfServicePage';
 import AboutUsPage from './pages/AboutUsPage';
 import ContactPage from './pages/ContactPage';
 import FAQPage from './pages/FAQPage';
+import BlogPage from './pages/BlogPage';
+import BlogPostPage from './pages/BlogPostPage';
 import Header from './components/Header';
 import SEO from './components/SEO';
 import './App.css';
@@ -40,6 +42,8 @@ function App() {
               <Route path="/about-us" element={<AboutUsPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/faq" element={<FAQPage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:postId" element={<BlogPostPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
