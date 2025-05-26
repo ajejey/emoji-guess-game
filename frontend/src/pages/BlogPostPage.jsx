@@ -49,7 +49,7 @@ const BlogPostPage = () => {
     <>
       <SEO title={postSeo.title} description={postSeo.description} />
       <div className="container mx-auto py-12 px-6 bg-white min-h-screen">
-        <article className="prose lg:prose-xl xl:prose-2xl mx-auto">
+        <article className="mx-auto max-w-4xl">
           <Suspense fallback={<div>Loading post...</div>}>
             <PostComponent />
           </Suspense>
