@@ -7,7 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'
 
 /**
  * Fetch categories from the backend
- * @returns {Promise<string[]>} Array of category names
+ * @returns {Promise<Array<{name: string, count: number}>>} Array of category objects with name and count
  */
 export const fetchCategories = async () => {
   try {
@@ -23,13 +23,13 @@ export const fetchCategories = async () => {
     console.error('Error fetching categories:', error);
     // Return default categories as fallback
     return [
-      'Food',
-      'Media',
-      'Nature',
-      'Actions',
-      'Entertainment',
-      'Technology',
-      'Sports'
+      { name: 'Entertainment', count: 2 },
+      { name: 'Technology', count: 2 },
+      { name: 'Animals', count: 2 },
+      { name: 'Hindi movie', count: 5 },
+      { name: 'Hollywood movie', count: 28 },
+      { name: 'TV Shows', count: 27 },
+      { name: 'Music', count: 28 }
     ];
   }
 };

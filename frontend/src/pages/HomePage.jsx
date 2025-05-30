@@ -25,13 +25,13 @@ const HomePage = () => {
     roundTime: 60,
     roundsPerGame: 5,
     categories: [
-      'Food',
-      'Media',
-      'Nature',
-      'Actions',
+      'Animals',
       'Entertainment',
       'Technology',
-      'Sports'
+      'Hindi movie',
+      'Hollywood movie',
+      'TV Shows',
+      'Music'
     ]
   });
   
@@ -45,7 +45,12 @@ const HomePage = () => {
         
         // Update game settings with default selected categories (first 5-7 categories)
         if (categories.length > 0) {
-          const defaultSelectedCategories = categories.slice(0, Math.min(7, categories.length));
+          // Sort categories by count (descending) and select top categories
+          const sortedCategories = [...categories].sort((a, b) => b.count - a.count);
+          const defaultSelectedCategories = sortedCategories
+            .slice(0, Math.min(7, sortedCategories.length))
+            .map(cat => cat.name);
+          
           setGameSettings(prev => ({
             ...prev,
             categories: defaultSelectedCategories
@@ -143,11 +148,11 @@ const HomePage = () => {
     }));
   };
   
-  const handleCategoryToggle = (category) => {
+  const handleCategoryToggle = (categoryName) => {
     setGameSettings(prev => {
-      const updatedCategories = prev.categories.includes(category)
-        ? prev.categories.filter(cat => cat !== category) // Remove if already selected
-        : [...prev.categories, category]; // Add if not already selected
+      const updatedCategories = prev.categories.includes(categoryName)
+        ? prev.categories.filter(cat => cat !== categoryName) // Remove if already selected
+        : [...prev.categories, categoryName]; // Add if not already selected
         
       return {
         ...prev,
@@ -326,16 +331,16 @@ const HomePage = () => {
                     ) : (
                       <div className="grid grid-cols-2 gap-2">
                         {availableCategories.map(category => (
-                          <div key={category} className="flex items-center">
+                          <div key={category.name} className="flex items-center">
                             <input
                               type="checkbox"
-                              id={`category-${category}`}
-                              checked={gameSettings.categories.includes(category)}
-                              onChange={() => handleCategoryToggle(category)}
+                              id={`category-${category.name}`}
+                              checked={gameSettings.categories.includes(category.name)}
+                              onChange={() => handleCategoryToggle(category.name)}
                               className="h-4 w-4 text-indigo-600 rounded"
                             />
-                            <label htmlFor={`category-${category}`} className="ml-2 text-sm text-gray-700 truncate">
-                              {category}
+                            <label htmlFor={`category-${category.name}`} className="ml-2 text-sm text-gray-700 truncate">
+                              {category.name} <span className="text-xs text-gray-500">({category.count})</span>
                             </label>
                           </div>
                         ))}
