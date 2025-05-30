@@ -9,11 +9,7 @@ const { initializeSocketHandlers } = require('./socket/socketHandler');
 const app = express();
 
 // Configure CORS with specific options
-app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:3000", "https://emoji-guess-game-seven.vercel.app", process.env.FRONTEND_URL],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true
-}));
+app.use(cors());
 
 app.use(express.json());
 
@@ -57,9 +53,8 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:3000", "https://emoji-guess-game-seven.vercel.app", process.env.FRONTEND_URL],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true
+    origin: process.env.FRONTEND_URL || "http://localhost:5173", // Frontend Vite default port
+    methods: ["GET", "POST"]
   }
 });
 
